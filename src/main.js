@@ -8,6 +8,8 @@ import { AssetRegistry } from './core/AssetRegistry.js';
 import { createSky } from './world/Sky.js';
 import { createLighting } from './world/Lighting.js';
 import { createGround } from './world/Ground.js';
+import { createRoads } from './world/Roads.js';
+import { createWater } from './world/Water.js';
 import campus from './data/campus.generated.json';
 
 const canvas = document.getElementById('scene');
@@ -26,7 +28,9 @@ scenes.register('preview', async () => {
   const sky = createSky(scene);
   const lighting = createLighting(scene, renderer);
   const ground = createGround(campus, registry);
-  scene.add(ground.group);
+  const roads = createRoads(campus, registry);
+  const water = createWater(campus, registry);
+  scene.add(ground.group, roads.group, water.group);
 
   const applyTime = () => {
     sky.setPreset(Settings.get('timeOfDay'));
@@ -47,12 +51,15 @@ scenes.register('preview', async () => {
       camera.position.set(Math.sin(t) * r, 240 + Math.sin(t * 0.5) * 60, Math.cos(t) * r);
       camera.lookAt(0, 0, 0);
       lighting.updateShadowTarget(new THREE.Vector3(0, 0, 0));
+      water.update(dt);
     },
     dispose() {
       events.off('settings:change', onSettings);
       sky.dispose();
       lighting.dispose();
       ground.dispose();
+      roads.dispose();
+      water.dispose();
       registry.disposeAll();
     },
   };
