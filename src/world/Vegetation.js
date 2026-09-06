@@ -59,7 +59,20 @@ export function createVegetation(campus, registry) {
   // rejection: inside a building footprint (+3 m), inside water, or on a road
   const buildingRings = buildings.map((b) => b.footprint);
   const waterRings = (water ?? []).map((w) => w.polygon);
+  // keep a clear apron around each gate (the spawn area)
+  const centre = [
+    (bounds.minX + bounds.maxX) / 2,
+    (bounds.minZ + bounds.maxZ) / 2,
+  ];
+  const spawnSpots = (campus.gates ?? []).map((g) => {
+    const dx = centre[0] - g.x;
+    const dz = centre[1] - g.z;
+    const l = Math.hypot(dx, dz) || 1;
+    return [g.x + (dx / l) * 28, g.z + (dz / l) * 28];
+  });
+
   const reject = (x, z) => {
+    for (const s of spawnSpots) if (Math.hypot(x - s[0], z - s[1]) < 14) return true;
     for (const r of buildingRings) if (pointInRing([x, z], inflate(r, 3))) return true;
     for (const r of waterRings) if (pointInRing([x, z], r)) return true;
     for (const road of roads) {

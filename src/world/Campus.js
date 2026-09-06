@@ -109,6 +109,8 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     player,
     collider,
     buildings,
+    landmarks,
+    vegetation,
     lighting,
     setTimeOfDay: (name) => Settings.set('timeOfDay', name),
     setMode: (m) => player.setMode(m),
