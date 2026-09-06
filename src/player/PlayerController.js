@@ -140,10 +140,15 @@ export class PlayerController {
       this.onGround = true;
     }
 
-    // head bob
+    // head bob + footstep events
     const moving = Math.hypot(wishX, wishZ) > 0.1 && this.onGround;
-    if (moving && !Settings.get('reduceMotion')) {
+    if (moving) {
+      const prevBob = this._bob;
       this._bob += dt * (run ? 14 : 9);
+      // fire a step each time the bob sine crosses its low point
+      if (Math.sin(prevBob) < 0 && Math.sin(this._bob) >= 0) {
+        events.emit('player:step', run);
+      }
     } else {
       this._bob *= 0.8;
     }

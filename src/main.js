@@ -8,6 +8,7 @@ import { Loading } from './ui/Loading.js';
 import { StartMenu } from './ui/StartMenu.js';
 import { GameUI } from './ui/GameUI.js';
 import { InteriorRouter } from './interiors/router.js';
+import { Ambience } from './audio/Ambience.js';
 import { el } from './ui/dom.js';
 import campus from './data/campus.generated.json';
 
@@ -61,6 +62,7 @@ function frame() {
     const paused = !!menu || (gameUI && gameUI.anyPanelOpen());
     view.update(paused ? 0 : dt);
     if (view === campusView && !router?.inInterior) gameUI?.update(dt);
+    if (!paused) ambience?.update({ position: view.camera.position });
     renderer.render(view.scene, view.camera);
   }
   requestAnimationFrame(frame);
@@ -87,6 +89,11 @@ gameUI = new GameUI({
   api,
   onEnterInterior: (record) => events.emit('interior:request', record),
 });
+
+const ambience = new Ambience(campus);
+function startAudio() {
+  ambience.start();
+}
 
 // interior enter/leave
 const interiorBanner = el('div', {
@@ -126,10 +133,12 @@ function openMenu() {
     root: uiRoot,
     onEnter: () => {
       menu = null;
+      startAudio();
       canvas.requestPointerLock?.();
     },
     onTour: () => {
       menu = null;
+      startAudio();
       events.emit('tour:start');
     },
     onDirectory: () => {
