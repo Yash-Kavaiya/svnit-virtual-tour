@@ -1,78 +1,38 @@
-import * as THREE from 'three';
 import { createRenderer } from './core/Renderer.js';
 import { Clock } from './core/Clock.js';
 import { SceneManager } from './core/SceneManager.js';
 import { Settings } from './core/Settings.js';
 import { events } from './core/events.js';
-import { AssetRegistry } from './core/AssetRegistry.js';
-import { createSky } from './world/Sky.js';
-import { createLighting } from './world/Lighting.js';
-import { createGround } from './world/Ground.js';
-import { createRoads } from './world/Roads.js';
-import { createWater } from './world/Water.js';
-import { createBuildings } from './world/buildings/Buildings.js';
+import { createCampusScene } from './world/Campus.js';
 import campus from './data/campus.generated.json';
 
 const canvas = document.getElementById('scene');
+const uiRoot = document.getElementById('ui');
 const { renderer, setSize } = createRenderer(canvas);
 const scenes = new SceneManager(renderer);
 
-// Dev preview scene — an orbiting look at the campus base as world modules land.
-// Task 15 replaces this with the real 'campus' scene + player controller.
-scenes.register('preview', async () => {
-  const scene = new THREE.Scene();
-  const registry = new AssetRegistry();
-  const camera = new THREE.PerspectiveCamera(Settings.get('fov'), innerWidth / innerHeight, 0.1, 4000);
-  camera.position.set(0, 260, 620);
-  camera.lookAt(0, 0, 0);
+// Minimal boot overlay (Task 21 replaces with the real loading screen + menu).
+const boot = document.createElement('div');
+boot.className = 'panel';
+boot.style.cssText =
+  'left:50%;top:50%;transform:translate(-50%,-50%);padding:1.4rem 2rem;text-align:center;min-width:260px';
+boot.innerHTML =
+  '<div style="font-size:1.05rem;font-weight:600">SVNIT Surat — Virtual Campus Tour</div>' +
+  '<div id="boot-status" style="color:var(--text-dim);margin-top:.5rem;font-size:.85rem">Loading…</div>';
+uiRoot.append(boot);
+const bootStatus = boot.querySelector('#boot-status');
 
-  const sky = createSky(scene);
-  const lighting = createLighting(scene, renderer);
-  const ground = createGround(campus, registry);
-  const roads = createRoads(campus, registry);
-  const water = createWater(campus, registry);
-  const buildings = createBuildings(campus, registry);
-  scene.add(ground.group, roads.group, water.group, buildings.group);
-
-  const applyTime = () => {
-    sky.setPreset(Settings.get('timeOfDay'));
-    lighting.setPreset(Settings.get('timeOfDay'));
-  };
-  applyTime();
-  const onSettings = ({ key }) => key === 'timeOfDay' && applyTime();
-  events.on('settings:change', onSettings);
-
-  let t = 0;
-  return {
-    scene,
-    camera,
-    api: { scene, registry, campus, buildings, lighting, sky },
-    update(dt) {
-      if (window.__freeze) {
-        camera.position.fromArray(window.__freeze.pos);
-        camera.lookAt(...(window.__freeze.look ?? [0, 8, 0]));
-      } else {
-        t += dt * 0.06;
-        const r = 640;
-        camera.position.set(Math.sin(t) * r, 240 + Math.sin(t * 0.5) * 60, Math.cos(t) * r);
-        camera.lookAt(0, 0, 0);
-      }
-      lighting.updateShadowTarget(camera.position);
-      water.update(dt);
-      buildings.update(camera.position);
+scenes.register('campus', (params) =>
+  createCampusScene({
+    campus,
+    renderer,
+    domElement: canvas,
+    onProgress: (label) => {
+      bootStatus.textContent = `Building ${label}…`;
     },
-    dispose() {
-      events.off('settings:change', onSettings);
-      sky.dispose();
-      lighting.dispose();
-      ground.dispose();
-      roads.dispose();
-      water.dispose();
-      buildings.dispose();
-      registry.disposeAll();
-    },
-  };
-});
+    ...params,
+  }),
+);
 
 function resize() {
   const w = Math.max(1, window.innerWidth);
@@ -105,7 +65,8 @@ events.on('settings:change', ({ key }) => {
   }
 });
 
-await scenes.activate('preview');
+await scenes.activate('campus');
+boot.remove();
 resize();
 frame();
 
