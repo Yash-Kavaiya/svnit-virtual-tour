@@ -18,7 +18,7 @@ const fadeEl = document.getElementById('fade');
 const { renderer, setSize } = createRenderer(canvas);
 const scenes = new SceneManager(renderer);
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11;
 const loading = new Loading(uiRoot).show();
 let progressCount = 0;
 

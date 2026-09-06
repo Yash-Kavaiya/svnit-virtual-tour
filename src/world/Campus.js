@@ -11,6 +11,7 @@ import { createBuildings } from './buildings/Buildings.js';
 import { createVegetation } from './Vegetation.js';
 import { createStreetKit } from './StreetKit.js';
 import { createLandmarks } from './Landmarks.js';
+import { createLife } from './Life.js';
 import { PlayerController } from '../player/PlayerController.js';
 import { Collider } from '../player/Collision.js';
 import { TIME_PRESETS } from './TimeOfDay.js';
@@ -45,6 +46,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     createStreetKit(campus, registry, buildings),
   );
   const landmarks = await step('Landmarks', () => createLandmarks(campus, registry));
+  const life = await step('Campus life', () => createLife(campus, registry));
 
   scene.add(
     ground.group,
@@ -54,6 +56,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     vegetation.group,
     streetKit.group,
     landmarks.group,
+    life.group,
   );
   scene.fog = new THREE.FogExp2(TIME_PRESETS.noon.fogColor, TIME_PRESETS.noon.fogDensity);
 
@@ -94,6 +97,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
   applyTime();
   const onSettings = ({ key }) => {
     if (key === 'timeOfDay') applyTime();
+    if (key === 'ambientLife') life.setEnabled(Settings.get('ambientLife'));
     if (key === 'fov') {
       camera.fov = Settings.get('fov');
       camera.updateProjectionMatrix();
@@ -126,6 +130,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
       water.update(dt);
       buildings.update(camera.position);
       streetKit.update(dt);
+      life.update(dt);
     },
     dispose() {
       events.off('settings:change', onSettings);
@@ -139,6 +144,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
       vegetation.dispose();
       streetKit.dispose();
       landmarks.dispose();
+      life.dispose();
       registry.disposeAll();
     },
   };
