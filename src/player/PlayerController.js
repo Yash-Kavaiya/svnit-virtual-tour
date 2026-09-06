@@ -24,6 +24,8 @@ export class PlayerController {
     this._bob = 0;
     this._locked = false;
     this._fly = { vel: [0, 0, 0] };
+    this._touchMove = { x: 0, y: 0 };
+    this._touchRun = false;
 
     this._onKeyDown = (e) => {
       this.keys.add(e.code);
@@ -82,6 +84,21 @@ export class PlayerController {
     if (this._locked) document.exitPointerLock?.();
   }
 
+  setMoveInput(v) {
+    this._touchMove = v;
+  }
+
+  setRunInput(on) {
+    this._touchRun = on;
+  }
+
+  addLook(dx, dy) {
+    const inv = Settings.get('invertY') ? -1 : 1;
+    this.yaw -= dx * 0.005;
+    this.pitch -= dy * 0.005 * inv;
+    this.pitch = Math.max(-1.35, Math.min(1.35, this.pitch));
+  }
+
   update(dt) {
     if (this.mode === 'tour') {
       // the CameraRig drives the camera during the guided tour
@@ -104,7 +121,11 @@ export class PlayerController {
     if (k.has('KeyS') || k.has('ArrowDown')) f -= 1;
     if (k.has('KeyD') || k.has('ArrowRight')) s += 1;
     if (k.has('KeyA') || k.has('ArrowLeft')) s -= 1;
-    return { f, s, run: k.has('ShiftLeft') || k.has('ShiftRight') };
+    if (Math.abs(this._touchMove.y) > 0.05) f += this._touchMove.y;
+    if (Math.abs(this._touchMove.x) > 0.05) s += this._touchMove.x;
+    f = Math.max(-1, Math.min(1, f));
+    s = Math.max(-1, Math.min(1, s));
+    return { f, s, run: this._touchRun || k.has('ShiftLeft') || k.has('ShiftRight') };
   }
 
   #updateWalk(dt) {

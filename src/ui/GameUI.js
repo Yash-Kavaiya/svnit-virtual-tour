@@ -6,6 +6,7 @@ import { SettingsPanel } from './SettingsPanel.js';
 import { Credits } from './Credits.js';
 import { Interaction } from '../player/Interaction.js';
 import { Teleport } from '../player/Teleport.js';
+import { MobileControls, isTouchDevice } from '../player/MobileControls.js';
 import { TourPanel } from './TourPanel.js';
 import { CameraRig } from '../tour/CameraRig.js';
 import { resolveTour } from '../tour/route.js';
@@ -62,6 +63,16 @@ export class GameUI {
     });
 
     this._tip = null;
+
+    if (isTouchDevice()) {
+      this.mobile = new MobileControls({
+        onMove: (v) => api.player.setMoveInput(v),
+        onLook: (dx, dy) => api.player.addLook(dx, dy),
+        onInteract: () => this.interaction.hovered && this.#onSelect(this.interaction.hovered),
+        onRun: (on) => api.player.setRunInput(on),
+      }).mount(root);
+    }
+
     this.#bindKeys();
     this.#bindEvents();
   }
@@ -228,6 +239,7 @@ export class GameUI {
   dispose() {
     window.removeEventListener('keydown', this._onKey);
     for (const [k, fn] of Object.entries(this._h)) events.off(k, fn);
+    this.mobile?.dispose();
     this.interaction.dispose();
     this.hud.dispose();
     this.minimap.dispose();

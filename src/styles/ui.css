@@ -61,3 +61,22 @@ input:focus-visible,
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Narrow viewports: dialog panels become bottom sheets */
+@media (max-width: 720px) {
+  .panel[role='dialog'] {
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px 16px 0 0;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  button {
+    min-height: 48px;
+  }
+}
