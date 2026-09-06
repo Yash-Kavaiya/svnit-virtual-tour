@@ -41,6 +41,11 @@ export default [
         matchMedia: 'readonly',
         structuredClone: 'readonly',
         globalThis: 'readonly',
+        ResizeObserver: 'readonly',
+        IntersectionObserver: 'readonly',
+        MutationObserver: 'readonly',
+        cancelIdleCallback: 'readonly',
+        requestIdleCallback: 'readonly',
         // node (scripts + tests)
         process: 'readonly',
         console: 'readonly',

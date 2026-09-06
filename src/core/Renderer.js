@@ -13,7 +13,7 @@ export function createRenderer(canvas) {
   renderer.toneMappingExposure = 1.0;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-  const setSize = (w, h) => renderer.setSize(w, h, false);
+  const setSize = (w, h) => renderer.setSize(w, h, true);
 
   return { renderer, setSize, dispose: () => renderer.dispose() };
 }
