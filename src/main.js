@@ -4,60 +4,56 @@ import { Clock } from './core/Clock.js';
 import { SceneManager } from './core/SceneManager.js';
 import { Settings } from './core/Settings.js';
 import { events } from './core/events.js';
+import { AssetRegistry } from './core/AssetRegistry.js';
 import { createSky } from './world/Sky.js';
 import { createLighting } from './world/Lighting.js';
+import { createGround } from './world/Ground.js';
+import campus from './data/campus.generated.json';
 
 const canvas = document.getElementById('scene');
 const { renderer, setSize } = createRenderer(canvas);
 const scenes = new SceneManager(renderer);
 
-// Placeholder scene — replaced by the 'campus' scene once its module lands.
-scenes.register('placeholder', async () => {
+// Dev preview scene — an orbiting look at the campus base as world modules land.
+// Task 15 replaces this with the real 'campus' scene + player controller.
+scenes.register('preview', async () => {
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(Settings.get('fov'), innerWidth / innerHeight, 0.1, 3000);
-  camera.position.set(0, 22, 90);
-  camera.lookAt(0, 4, 0);
+  const registry = new AssetRegistry();
+  const camera = new THREE.PerspectiveCamera(Settings.get('fov'), innerWidth / innerHeight, 0.1, 4000);
+  camera.position.set(0, 260, 620);
+  camera.lookAt(0, 0, 0);
 
   const sky = createSky(scene);
   const lighting = createLighting(scene, renderer);
-  sky.setPreset(Settings.get('timeOfDay'));
-  lighting.setPreset(Settings.get('timeOfDay'));
+  const ground = createGround(campus, registry);
+  scene.add(ground.group);
 
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(1200, 1200),
-    new THREE.MeshStandardMaterial({ color: '#6f7d4a', roughness: 1 }),
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
-
-  const boxMat = new THREE.MeshStandardMaterial({ color: '#c9b79a', roughness: 0.9 });
-  for (let i = 0; i < 8; i++) {
-    const h = 6 + i * 3;
-    const b = new THREE.Mesh(new THREE.BoxGeometry(12, h, 12), boxMat);
-    b.position.set(-60 + i * 18, h / 2, Math.sin(i) * 20);
-    b.castShadow = true;
-    b.receiveShadow = true;
-    scene.add(b);
-  }
-  scene.add(new THREE.GridHelper(400, 40, '#3a5a78', '#2a425855'));
+  const applyTime = () => {
+    sky.setPreset(Settings.get('timeOfDay'));
+    lighting.setPreset(Settings.get('timeOfDay'));
+  };
+  applyTime();
+  const onSettings = ({ key }) => key === 'timeOfDay' && applyTime();
+  events.on('settings:change', onSettings);
 
   let t = 0;
   return {
     scene,
     camera,
+    api: { scene, registry, campus },
     update(dt) {
-      t += dt;
-      camera.position.x = Math.sin(t * 0.08) * 110;
-      camera.position.z = Math.cos(t * 0.08) * 110;
-      camera.lookAt(0, 6, 0);
+      t += dt * 0.06;
+      const r = 640;
+      camera.position.set(Math.sin(t) * r, 240 + Math.sin(t * 0.5) * 60, Math.cos(t) * r);
+      camera.lookAt(0, 0, 0);
       lighting.updateShadowTarget(new THREE.Vector3(0, 0, 0));
     },
     dispose() {
+      events.off('settings:change', onSettings);
       sky.dispose();
       lighting.dispose();
-      ground.geometry.dispose();
-      ground.material.dispose();
+      ground.dispose();
+      registry.disposeAll();
     },
   };
 });
@@ -93,6 +89,6 @@ events.on('settings:change', ({ key }) => {
   }
 });
 
-await scenes.activate('placeholder');
+await scenes.activate('preview');
 resize();
 frame();
