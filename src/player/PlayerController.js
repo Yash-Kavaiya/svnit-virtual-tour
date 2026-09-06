@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Settings } from '../core/Settings.js';
 import { events } from '../core/events.js';
+import { integrateFly } from './FlyControls.js';
 
 const EYE = 1.7;
 const WALK = 3.0;
@@ -22,6 +23,7 @@ export class PlayerController {
     this.keys = new Set();
     this._bob = 0;
     this._locked = false;
+    this._fly = { vel: [0, 0, 0] };
 
     this._onKeyDown = (e) => {
       this.keys.add(e.code);
@@ -149,15 +151,20 @@ export class PlayerController {
 
   #updateFly(dt) {
     const { f, s, run } = this.#inputAxis();
-    const speed = (run ? 60 : 22) * dt;
+    let up = 0;
+    if (this.keys.has('KeyE') || this.keys.has('Space')) up += 1;
+    if (this.keys.has('KeyQ') || this.keys.has('ControlLeft')) up -= 1;
+
+    this._fly = integrateFly(this._fly, { forward: f, right: s, up, boost: run }, dt);
+    const [vf, vr, vu] = this._fly.vel;
+
     const dir = new THREE.Vector3();
     this.camera.getWorldDirection(dir);
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize();
-    this.pos.addScaledVector(dir, f * speed);
-    this.pos.addScaledVector(right, s * speed);
-    if (this.keys.has('KeyE') || this.keys.has('Space')) this.pos.y += speed;
-    if (this.keys.has('KeyQ') || this.keys.has('ControlLeft')) this.pos.y -= speed;
-    this.pos.y = Math.max(1, this.pos.y);
+    this.pos.addScaledVector(dir, vf * dt);
+    this.pos.addScaledVector(right, vr * dt);
+    this.pos.y += vu * dt;
+    this.pos.y = Math.max(1.2, this.pos.y);
   }
 
   #applyCamera() {
