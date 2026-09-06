@@ -32,9 +32,10 @@ const FRAG = /* glsl */ `
   }
 `;
 
+// local Y = -worldZ so `rotation.x = -PI/2` lands the polygon at world XZ.
 function shapeFromRing(ring) {
   const s = new THREE.Shape();
-  ring.forEach(([x, z], i) => (i ? s.lineTo(x, z) : s.moveTo(x, z)));
+  ring.forEach(([x, z], i) => (i ? s.lineTo(x, -z) : s.moveTo(x, -z)));
   s.closePath();
   return s;
 }

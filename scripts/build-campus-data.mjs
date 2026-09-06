@@ -11,6 +11,9 @@ import {
   ringArea,
   pointInRing,
   longestEdgeAngle,
+  convexHull,
+  orientedBox,
+  clampOrientedBox,
 } from '../src/shared/polygon.mjs';
 import { validateCampusData } from '../src/data/schema.mjs';
 
@@ -71,6 +74,56 @@ function round(n, p = 2) {
   return Math.round(n * f) / f;
 }
 
+function bboxSides(ring) {
+  const a = longestEdgeAngle(ring);
+  const [cx, cz] = ringCentroid(ring);
+  const c = Math.cos(-a);
+  const s = Math.sin(-a);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (const [x, z] of ring) {
+    const dx = x - cx;
+    const dz = z - cz;
+    const rx = dx * c - dz * s;
+    const rz = dx * s + dz * c;
+    minX = Math.min(minX, rx);
+    maxX = Math.max(maxX, rx);
+    minZ = Math.min(minZ, rz);
+    maxZ = Math.max(maxZ, rz);
+  }
+  return [maxX - minX, maxZ - minZ];
+}
+
+// Clean noisy / concave / hollow OSM footprints into convex prisms that
+// extrude without triangulation artifacts. Courtyard detail is traded for
+// robustness, which the spec permits for v1.
+function sanitizeFootprint(ring) {
+  let r = simplifyRing(ensureWinding(dedupeRing(ring), true), 1.6);
+  if (r.length < 3) return null;
+
+  const area = Math.abs(ringArea(r));
+  const [w, d] = bboxSides(r);
+  const bboxArea = w * d;
+  const spread = bboxArea / Math.max(area, 1);
+
+  if (r.length > 14 || spread > 2.2 || Math.max(w, d) > 85) {
+    r = simplifyRing(convexHull(r), 1.2);
+  }
+  const [w2, d2] = bboxSides(r);
+  if (Math.max(w2, d2) > 110 || r.length > 16) {
+    r = clampOrientedBox(r, 96, 62);
+  }
+  r = simplifyRing(ensureWinding(dedupeRing(r), true), 1.0);
+  if (r.length < 3 || Math.abs(ringArea(r)) < 20) {
+    // last resort: a modest oriented box
+    r = orientedBox(ring);
+    if (Math.abs(ringArea(r)) < 20) return null;
+  }
+  return r;
+}
+
 export function buildCampus(overpassJson, opts = {}) {
   const parsed = parseOverpass(overpassJson);
   if (!parsed.boundary) throw new Error('campus boundary polygon not found in Overpass data');
@@ -101,8 +154,8 @@ export function buildCampus(overpassJson, opts = {}) {
 
   const buildings = [];
   const pushBuilding = (id, name, ringXZ, tags, levelsHint, curatedMeta) => {
-    const ring = simplifyRing(ensureWinding(dedupeRing(ringXZ), true), 0.4);
-    if (ring.length < 3 || Math.abs(ringArea(ring)) < 6) return; // drop slivers
+    const ring = sanitizeFootprint(ringXZ);
+    if (!ring) return; // degenerate
     if (!centroidInCampus(ring)) return;
 
     const cur = curatedMeta ?? curatedFor(id, name);

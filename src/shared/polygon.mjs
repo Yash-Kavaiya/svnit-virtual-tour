@@ -99,6 +99,92 @@ export function simplifyRing(ring, eps = 0.35) {
   return out.length >= 3 ? out : ring;
 }
 
+// Andrew's monotone chain convex hull. Returns a CCW ring.
+export function convexHull(points) {
+  const pts = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  if (pts.length < 3) return pts;
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lower = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
+      lower.pop();
+    }
+    lower.push(p);
+  }
+  const upper = [];
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const p = pts[i];
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
+      upper.pop();
+    }
+    upper.push(p);
+  }
+  lower.pop();
+  upper.pop();
+  return ensureWinding(lower.concat(upper), true);
+}
+
+// Minimum-area-ish oriented bounding rectangle aligned to the longest edge of
+// the hull. Returns a 4-point CCW ring.
+export function orientedBox(ring) {
+  const hull = convexHull(ring);
+  const angle = longestEdgeAngle(hull);
+  const c = Math.cos(-angle);
+  const s = Math.sin(-angle);
+  const [cx, cz] = ringCentroid(hull);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (const [x, z] of hull) {
+    const dx = x - cx;
+    const dz = z - cz;
+    const rx = dx * c - dz * s;
+    const rz = dx * s + dz * c;
+    minX = Math.min(minX, rx);
+    maxX = Math.max(maxX, rx);
+    minZ = Math.min(minZ, rz);
+    maxZ = Math.max(maxZ, rz);
+  }
+  const ca = Math.cos(angle);
+  const sa = Math.sin(angle);
+  const corner = (rx, rz) => [cx + rx * ca - rz * sa, cz + rx * sa + rz * ca];
+  return [
+    corner(minX, minZ),
+    corner(maxX, minZ),
+    corner(maxX, maxZ),
+    corner(minX, maxZ),
+  ];
+}
+
+// Clamp an oriented box's half-extents, keeping centroid + orientation.
+export function clampOrientedBox(ring, maxLong = 95, maxShort = 60) {
+  const box = orientedBox(ring);
+  const [cx, cz] = ringCentroid(box);
+  const angle = longestEdgeAngle(box);
+  const ca = Math.cos(angle);
+  const sa = Math.sin(angle);
+  const c = Math.cos(-angle);
+  const s = Math.sin(-angle);
+  let halfL = 0;
+  let halfS = 0;
+  for (const [x, z] of box) {
+    const dx = x - cx;
+    const dz = z - cz;
+    halfL = Math.max(halfL, Math.abs(dx * c - dz * s));
+    halfS = Math.max(halfS, Math.abs(dx * s + dz * c));
+  }
+  halfL = Math.min(halfL, maxLong / 2);
+  halfS = Math.min(halfS, maxShort / 2);
+  const corner = (rx, rz) => [cx + rx * ca - rz * sa, cz + rx * sa + rz * ca];
+  return [
+    corner(-halfL, -halfS),
+    corner(halfL, -halfS),
+    corner(halfL, halfS),
+    corner(-halfL, halfS),
+  ];
+}
+
 export function longestEdgeAngle(ring) {
   let best = 0;
   let angle = 0;

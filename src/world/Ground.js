@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import { grassTexture, concreteTexture } from './textures.js';
 import { ensureWinding } from '../shared/polygon.mjs';
 
+// Build a THREE.Shape whose local Y = -worldZ, so after `rotation.x = -PI/2`
+// (which maps localY -> -worldZ) the polygon lands at the correct world XZ.
 function shapeFromRing(ring) {
   const s = new THREE.Shape();
-  ring.forEach(([x, z], i) => (i ? s.lineTo(x, z) : s.moveTo(x, z)));
+  ring.forEach(([x, z], i) => (i ? s.lineTo(x, -z) : s.moveTo(x, -z)));
   s.closePath();
   return s;
 }

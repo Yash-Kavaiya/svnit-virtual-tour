@@ -47,16 +47,32 @@ export function extrudeFootprint(ring, height, opts = {}) {
     }
   }
 
-  // Cap (roof slab) — triangulate the polygon
+  // Cap (roof slab). Try earcut; fall back to a centroid fan if it fails or
+  // returns nothing (defensive — the pipeline already convex-cleans footprints).
   const contour = r.map(([x, z]) => new THREE.Vector2(x, z));
-  const tris = THREE.ShapeUtils.triangulateShape(contour, []);
   const [cx, cz] = ringCentroid(r);
-  for (const [i0, i1, i2] of tris) {
-    for (const idx of [i0, i1, i2]) {
-      const v = contour[idx];
-      positions.push(v.x, height, v.y);
-      normals.push(0, 1, 0);
-      uvs.push((v.x - cx) / 20, (v.y - cz) / 20);
+  let tris;
+  try {
+    tris = THREE.ShapeUtils.triangulateShape(contour, []) ?? [];
+  } catch {
+    tris = [];
+  }
+  if (tris.length) {
+    for (const [i0, i1, i2] of tris) {
+      for (const idx of [i0, i1, i2]) {
+        const v = contour[idx];
+        positions.push(v.x, height, v.y);
+        normals.push(0, 1, 0);
+        uvs.push((v.x - cx) / 20, (v.y - cz) / 20);
+      }
+    }
+  } else {
+    for (let i = 0; i < r.length; i++) {
+      const a = r[i];
+      const b = r[(i + 1) % r.length];
+      positions.push(cx, height, cz, b[0], height, b[1], a[0], height, a[1]);
+      normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
+      uvs.push(0, 0, (b[0] - cx) / 20, (b[1] - cz) / 20, (a[0] - cx) / 20, (a[1] - cz) / 20);
     }
   }
 

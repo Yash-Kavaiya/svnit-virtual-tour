@@ -10,6 +10,7 @@ import { createLighting } from './world/Lighting.js';
 import { createGround } from './world/Ground.js';
 import { createRoads } from './world/Roads.js';
 import { createWater } from './world/Water.js';
+import { createBuildings } from './world/buildings/Buildings.js';
 import campus from './data/campus.generated.json';
 
 const canvas = document.getElementById('scene');
@@ -30,7 +31,8 @@ scenes.register('preview', async () => {
   const ground = createGround(campus, registry);
   const roads = createRoads(campus, registry);
   const water = createWater(campus, registry);
-  scene.add(ground.group, roads.group, water.group);
+  const buildings = createBuildings(campus, registry);
+  scene.add(ground.group, roads.group, water.group, buildings.group);
 
   const applyTime = () => {
     sky.setPreset(Settings.get('timeOfDay'));
@@ -44,14 +46,20 @@ scenes.register('preview', async () => {
   return {
     scene,
     camera,
-    api: { scene, registry, campus },
+    api: { scene, registry, campus, buildings, lighting, sky },
     update(dt) {
-      t += dt * 0.06;
-      const r = 640;
-      camera.position.set(Math.sin(t) * r, 240 + Math.sin(t * 0.5) * 60, Math.cos(t) * r);
-      camera.lookAt(0, 0, 0);
-      lighting.updateShadowTarget(new THREE.Vector3(0, 0, 0));
+      if (window.__freeze) {
+        camera.position.fromArray(window.__freeze.pos);
+        camera.lookAt(...(window.__freeze.look ?? [0, 8, 0]));
+      } else {
+        t += dt * 0.06;
+        const r = 640;
+        camera.position.set(Math.sin(t) * r, 240 + Math.sin(t * 0.5) * 60, Math.cos(t) * r);
+        camera.lookAt(0, 0, 0);
+      }
+      lighting.updateShadowTarget(camera.position);
       water.update(dt);
+      buildings.update(camera.position);
     },
     dispose() {
       events.off('settings:change', onSettings);
@@ -60,6 +68,7 @@ scenes.register('preview', async () => {
       ground.dispose();
       roads.dispose();
       water.dispose();
+      buildings.dispose();
       registry.disposeAll();
     },
   };
@@ -99,3 +108,7 @@ events.on('settings:change', ({ key }) => {
 await scenes.activate('preview');
 resize();
 frame();
+
+if (import.meta.env.DEV) {
+  window.__scenes = scenes;
+}
