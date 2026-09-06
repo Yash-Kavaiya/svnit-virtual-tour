@@ -123,6 +123,14 @@ const ambience = new Ambience(campus);
 function startAudio() {
   ambience.start();
 }
+function lockPointer() {
+  try {
+    const p = canvas.requestPointerLock?.();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  } catch {
+    /* pointer lock needs a user gesture / not supported */
+  }
+}
 
 // interior enter/leave
 const interiorBanner = el('div', {
@@ -163,7 +171,7 @@ function openMenu() {
     onEnter: () => {
       menu = null;
       startAudio();
-      canvas.requestPointerLock?.();
+      lockPointer();
     },
     onTour: () => {
       menu = null;

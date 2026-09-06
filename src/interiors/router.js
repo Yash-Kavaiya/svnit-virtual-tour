@@ -53,7 +53,12 @@ export class InteriorRouter {
     this.active = factory({ domElement: this.domElement });
     this.onViewChange(this.active);
     events.emit('interior:enter', key);
-    this.domElement.requestPointerLock?.();
+    try {
+      const p = this.domElement.requestPointerLock?.();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch {
+      /* needs a user gesture */
+    }
   }
 
   exit() {

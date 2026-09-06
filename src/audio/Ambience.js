@@ -8,6 +8,7 @@ export class Ambience {
     this.campus = campus;
     this.ctx = null;
     this.started = false;
+    this.ready = false;
     this._scene = 'campus';
 
     this._onSettings = () => this.#applyVolumes();
@@ -82,6 +83,7 @@ export class Ambience {
     cic.connect(cf).connect(this.cicGain).connect(this.ambBus);
     cic.start();
 
+    this.ready = true;
     this.#applyVolumes();
     this.#applyTimeOfDay();
 
@@ -93,7 +95,7 @@ export class Ambience {
   }
 
   #applyVolumes() {
-    if (!this.ctx) return;
+    if (!this.ready || !this.ctx) return;
     const m = Settings.get('volumeMaster');
     this.master.gain.value = m;
     this.ambBus.gain.value = Settings.get('volumeAmbience');
@@ -101,7 +103,7 @@ export class Ambience {
   }
 
   #applyTimeOfDay() {
-    if (!this.ctx) return;
+    if (!this.ready || !this.ctx) return;
     const t = Settings.get('timeOfDay');
     const night = t === 'night' || t === 'dusk';
     this.cicGain?.gain.setTargetAtTime(night ? (t === 'night' ? 0.05 : 0.03) : 0, this.ctx.currentTime, 1);
@@ -110,7 +112,7 @@ export class Ambience {
 
   setScene(scene) {
     this._scene = scene;
-    if (!this.ctx) return;
+    if (!this.ready || !this.ctx) return;
     const inside = scene === 'interior';
     this.ambBus.gain.setTargetAtTime(
       inside ? Settings.get('volumeAmbience') * 0.25 : Settings.get('volumeAmbience'),
@@ -120,7 +122,7 @@ export class Ambience {
   }
 
   update({ position }) {
-    if (!this.ctx || this._scene === 'interior') return;
+    if (!this.ready || !this.ctx || this._scene === 'interior') return;
     this.#applyTimeOfDay();
 
     // road hum swells near the gate

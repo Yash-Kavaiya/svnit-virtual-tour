@@ -44,7 +44,13 @@ export class PlayerController {
       events.emit('player:lock', this._locked);
     };
     this._onClick = () => {
-      if (this.mode === 'walk' && !this._locked) this.dom.requestPointerLock?.();
+      if (this.mode !== 'walk' || this._locked) return;
+      try {
+        const p = this.dom.requestPointerLock?.();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      } catch {
+        /* needs a user gesture */
+      }
     };
 
     window.addEventListener('keydown', this._onKeyDown);
