@@ -4,6 +4,8 @@ import { SceneManager } from './core/SceneManager.js';
 import { Settings } from './core/Settings.js';
 import { events } from './core/events.js';
 import { createCampusScene } from './world/Campus.js';
+import { Loading } from './ui/Loading.js';
+import { StartMenu } from './ui/StartMenu.js';
 import campus from './data/campus.generated.json';
 
 const canvas = document.getElementById('scene');
@@ -11,16 +13,20 @@ const uiRoot = document.getElementById('ui');
 const { renderer, setSize } = createRenderer(canvas);
 const scenes = new SceneManager(renderer);
 
-// Minimal boot overlay (Task 21 replaces with the real loading screen + menu).
-const boot = document.createElement('div');
-boot.className = 'panel';
-boot.style.cssText =
-  'left:50%;top:50%;transform:translate(-50%,-50%);padding:1.4rem 2rem;text-align:center;min-width:260px';
-boot.innerHTML =
-  '<div style="font-size:1.05rem;font-weight:600">SVNIT Surat — Virtual Campus Tour</div>' +
-  '<div id="boot-status" style="color:var(--text-dim);margin-top:.5rem;font-size:.85rem">Loading…</div>';
-uiRoot.append(boot);
-const bootStatus = boot.querySelector('#boot-status');
+const PROGRESS_STEPS = [
+  'Sky',
+  'Lighting',
+  'Ground & lawns',
+  'Roads',
+  'Water',
+  'Buildings',
+  'Trees & gardens',
+  'Street furniture',
+  'Landmarks',
+];
+
+const loading = new Loading(uiRoot).show();
+let progressCount = 0;
 
 scenes.register('campus', (params) =>
   createCampusScene({
@@ -28,7 +34,8 @@ scenes.register('campus', (params) =>
     renderer,
     domElement: canvas,
     onProgress: (label) => {
-      bootStatus.textContent = `Building ${label}…`;
+      progressCount += 1;
+      loading.setProgress(progressCount / (PROGRESS_STEPS.length + 1), `Building ${label}…`);
     },
     ...params,
   }),
@@ -50,9 +57,10 @@ if (typeof ResizeObserver !== 'undefined') {
 }
 
 const clock = new Clock();
+let running = false;
 function frame() {
   clock.tick();
-  scenes.update(Math.min(clock.delta, 0.1));
+  if (running) scenes.update(Math.min(clock.delta, 0.1));
   scenes.render();
   requestAnimationFrame(frame);
 }
@@ -65,11 +73,48 @@ events.on('settings:change', ({ key }) => {
   }
 });
 
-await scenes.activate('campus');
-boot.remove();
+const scene = await scenes.activate('campus');
+loading.done();
 resize();
+running = true;
 frame();
+
+const api = scene.api;
+
+// --- Start menu + pause menu
+let menu = null;
+function openMenu() {
+  if (menu) return;
+  api.player.releasePointer?.();
+  menu = new StartMenu({
+    root: uiRoot,
+    onEnter: () => {
+      menu = null;
+      canvas.requestPointerLock?.();
+    },
+    onTour: () => {
+      menu = null;
+      events.emit('tour:start');
+    },
+    onDirectory: () => events.emit('ui:directory'),
+    onSettings: () => events.emit('ui:settings'),
+    onCredits: () => events.emit('ui:credits'),
+  }).show();
+}
+openMenu();
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Escape') {
+    if (menu) {
+      menu.hide();
+      menu = null;
+    } else {
+      openMenu();
+    }
+  }
+});
 
 if (import.meta.env.DEV) {
   window.__scenes = scenes;
+  window.__api = api;
 }
