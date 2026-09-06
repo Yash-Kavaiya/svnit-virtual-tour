@@ -6,6 +6,9 @@ import { SettingsPanel } from './SettingsPanel.js';
 import { Credits } from './Credits.js';
 import { Interaction } from '../player/Interaction.js';
 import { Teleport } from '../player/Teleport.js';
+import { TourPanel } from './TourPanel.js';
+import { CameraRig } from '../tour/CameraRig.js';
+import { resolveTour } from '../tour/route.js';
 import { events } from '../core/events.js';
 
 // Owns all in-world UI and wires it to the campus scene + player.
@@ -40,6 +43,10 @@ export class GameUI {
 
     this.settingsPanel = new SettingsPanel(root);
     this.credits = new Credits(root);
+
+    this.tourPanel = new TourPanel(root);
+    this.rig = new CameraRig({ camera: api.camera });
+    this._tourActive = false;
 
     // interaction raycasting
     const pickables = [
@@ -81,8 +88,43 @@ export class GameUI {
       'ui:directory': () => this.#openExclusive(this.directory),
       'ui:settings': () => this.#openExclusive(this.settingsPanel),
       'ui:credits': () => this.#openExclusive(this.credits),
+      'tour:start': () => this.startTour(),
     };
     for (const [k, fn] of Object.entries(this._h)) events.on(k, fn);
+  }
+
+  startTour() {
+    if (this._tourActive) return;
+    this.closePanels();
+    this.api.player.releasePointer?.();
+    this.api.player.setMode('tour');
+    this._tourActive = true;
+    this.hud.node.hidden = true;
+    this.minimap.node.hidden = true;
+
+    const stops = resolveTour(this.api.campus, this.api.buildings);
+    this.tourPanel.bind(this.rig, stops);
+    this.rig.play(stops, {
+      onStop: (i, stop) => this.tourPanel.show(i, stop),
+      onEnd: () => this.endTour(),
+    });
+  }
+
+  endTour() {
+    if (!this._tourActive) return;
+    this._tourActive = false;
+    this.rig.stop();
+    this.tourPanel.hide();
+    this.hud.node.hidden = false;
+    this.minimap.node.hidden = false;
+    // drop the player where the camera ended, on the ground
+    const c = this.api.camera.position;
+    this.api.player.setMode('walk');
+    this.api.player.teleport({ x: c.x, y: 1.7, z: c.z }, this.api.player.heading);
+  }
+
+  get tourActive() {
+    return this._tourActive;
   }
 
   #onHover(obj) {
@@ -158,10 +200,13 @@ export class GameUI {
 
   update(dt) {
     if (this._interior) return;
+    if (this._tourActive) {
+      this.rig.update(dt);
+      return;
+    }
     this.interaction.update();
     this.hud.update({ position: this.api.player.position, heading: this.api.player.heading });
     this.minimap.update({ position: this.api.player.position, heading: this.api.player.heading });
-    void dt;
   }
 
   anyPanelOpen() {

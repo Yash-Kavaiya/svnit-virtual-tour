@@ -44,6 +44,8 @@ export default [
         ResizeObserver: 'readonly',
         IntersectionObserver: 'readonly',
         MutationObserver: 'readonly',
+        speechSynthesis: 'readonly',
+        SpeechSynthesisUtterance: 'readonly',
         cancelIdleCallback: 'readonly',
         requestIdleCallback: 'readonly',
         // node (scripts + tests)

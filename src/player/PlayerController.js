@@ -84,7 +84,7 @@ export class PlayerController {
 
   update(dt) {
     if (this.mode === 'tour') {
-      this.#applyCamera(dt);
+      // the CameraRig drives the camera during the guided tour
       return;
     }
     if (this.mode === 'fly') {
