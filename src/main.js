@@ -9,6 +9,7 @@ import { StartMenu } from './ui/StartMenu.js';
 import { GameUI } from './ui/GameUI.js';
 import { InteriorRouter } from './interiors/router.js';
 import { Ambience } from './audio/Ambience.js';
+import { PerfMonitor } from './core/perf.js';
 import { el } from './ui/dom.js';
 import campus from './data/campus.generated.json';
 
@@ -51,6 +52,8 @@ if (typeof ResizeObserver !== 'undefined') {
 }
 
 const clock = new Clock();
+const perf = new PerfMonitor(180);
+let perfNotified = false;
 let running = false;
 let gameUI = null;
 let view = null; // current render target: campus scene or an interior scene
@@ -64,8 +67,34 @@ function frame() {
     if (view === campusView && !router?.inInterior) gameUI?.update(dt);
     if (!paused) ambience?.update({ position: view.camera.position });
     renderer.render(view.scene, view.camera);
+
+    perf.sample(dt);
+    if (!perfNotified) {
+      const lower = perf.suggestQuality(Settings.get('quality'));
+      if (lower) {
+        perfNotified = true;
+        Settings.set('quality', lower);
+        toast(`Graphics set to ${lower} to keep things smooth — change it in Settings.`);
+      }
+    }
   }
   requestAnimationFrame(frame);
+}
+
+function toast(text) {
+  const t = el('div', {
+    className: 'panel',
+    style: {
+      left: '50%',
+      top: '4rem',
+      transform: 'translateX(-50%)',
+      padding: '.5rem 1rem',
+      fontSize: '.85rem',
+    },
+  });
+  t.textContent = text;
+  uiRoot.append(t);
+  setTimeout(() => t.remove(), 6000);
 }
 
 events.on('settings:change', ({ key }) => {
@@ -190,4 +219,5 @@ if (import.meta.env.DEV) {
   window.__scenes = scenes;
   window.__api = api;
   window.__ui = gameUI;
+  window.__renderer = renderer;
 }

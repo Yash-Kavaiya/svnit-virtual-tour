@@ -1,8 +1,8 @@
 const THRESHOLDS = {
-  low: [70, 300],
-  medium: [120, 500],
-  high: [180, 650],
-  ultra: [260, 900],
+  low: [55, 260],
+  medium: [90, 420],
+  high: [125, 560],
+  ultra: [210, 820],
 };
 
 export function lodLevel(distance, quality = 'high') {

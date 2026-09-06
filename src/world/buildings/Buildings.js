@@ -110,12 +110,24 @@ export function createBuildings(campus, registry) {
       far.rotation.y = fb.angle;
     }
 
-    bgroup.add(full, mid, far);
+    // always-present, non-rendering raycast proxy (LOD-independent)
+    const pick = new THREE.Mesh(
+      registry.geo('pick-box', () => new THREE.BoxGeometry(1, 1, 1)),
+      registry.mat('pick-mat', () => new THREE.MeshBasicMaterial({ visible: false })),
+    );
+    pick.scale.set(Math.max(w, 4), b.height, Math.max(d, 4));
+    pick.position.set(b.centroid[0], b.height / 2, b.centroid[1]);
+    pick.rotation.y = footprintBounds(b.footprint).angle;
+    pick.userData.buildingId = b.id;
+
+    bgroup.add(full, mid, far, pick);
+    // start at the cheapest LOD; update() promotes nearby buildings
+    full.visible = false;
     mid.visible = false;
-    far.visible = false;
+    far.visible = true;
 
     group.add(bgroup);
-    pickables.push(mid);
+    pickables.push(pick);
     byId.set(b.id, { group: bgroup, record: b, doorWorldPos });
   }
 
@@ -128,7 +140,7 @@ export function createBuildings(campus, registry) {
     byId,
     update(cameraPos) {
       frame++;
-      if (frame % 6 !== 0) return;
+      if (frame % 4 !== 0) return;
       const q = Settings.get('quality');
       for (const { group: bg, record } of byId.values()) {
         tmp.set(record.centroid[0], 0, record.centroid[1]);
@@ -138,6 +150,8 @@ export function createBuildings(campus, registry) {
         full.visible = level === 'full';
         mid.visible = level === 'mid';
         far.visible = level === 'far';
+        // cull the whole building past a hard distance
+        bg.visible = dist < 1600;
       }
     },
     dispose() {
