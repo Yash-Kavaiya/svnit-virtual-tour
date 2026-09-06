@@ -143,14 +143,10 @@ export function buildRoofCrown(footprint, height, opts = {}) {
   g.name = 'roof-crown';
 
   const concreteMat =
-    opts.concreteMat ?? new THREE.MeshStandardMaterial({ color: '#d9d2c4', roughness: 0.9 });
-  const copingMat =
-    opts.copingMat ?? new THREE.MeshStandardMaterial({ color: '#b7ad98', roughness: 0.85 });
+    opts.concreteMat ?? new THREE.MeshStandardMaterial({ color: '#c3baa7', roughness: 0.95 });
 
-  // overhanging cornice slab: footprint edges pushed out ~0.35 m, thin box
-  const corniceGeos = [];
-  const parapetGeos = [];
-  const copingGeos = [];
+  // cornice + parapet + coping, all one material -> one merged mesh (1 draw call)
+  const geos = [];
   const n = ring.length;
   for (let e = 0; e < n; e++) {
     const a = ring[e];
@@ -159,25 +155,39 @@ export function buildRoofCrown(footprint, height, opts = {}) {
     if (ei.len < 1.0) continue;
     const mx = (a[0] + b[0]) / 2;
     const mz = (a[1] + b[1]) / 2;
-
-    corniceGeos.push(
-      boxAlongEdge(ei.len + 0.4, 0.3, 0.6, mx + ei.nx * 0.18, height + 0.15, mz + ei.nz * 0.18, ei.rotY),
+    geos.push(
+      boxAlongEdge(ei.len + 0.2, 0.26, 0.42, mx + ei.nx * 0.11, height + 0.13, mz + ei.nz * 0.11, ei.rotY),
     );
-    // parapet wall just inside the wall face
-    parapetGeos.push(
-      boxAlongEdge(ei.len, 1.0, 0.2, mx - ei.nx * 0.08, height + 0.8, mz - ei.nz * 0.08, ei.rotY),
+    geos.push(
+      boxAlongEdge(ei.len - 0.1, 0.85, 0.18, mx - ei.nx * 0.06, height + 0.68, mz - ei.nz * 0.06, ei.rotY),
     );
-    copingGeos.push(
-      boxAlongEdge(ei.len + 0.2, 0.14, 0.32, mx - ei.nx * 0.08, height + 1.34, mz - ei.nz * 0.08, ei.rotY),
+    geos.push(
+      boxAlongEdge(ei.len + 0.1, 0.12, 0.28, mx - ei.nx * 0.06, height + 1.16, mz - ei.nz * 0.06, ei.rotY),
     );
   }
-  const cornice = wrapMesh(mergeOrNull(corniceGeos), concreteMat);
-  const parapet = wrapMesh(mergeOrNull(parapetGeos), concreteMat);
-  const coping = wrapMesh(mergeOrNull(copingGeos), copingMat);
-  if (cornice) g.add(cornice);
-  if (parapet) g.add(parapet);
-  if (coping) g.add(coping);
+  const crown = wrapMesh(mergeOrNull(geos), concreteMat);
+  if (crown) g.add(crown);
   return g;
+}
+
+// A thin paved skirt around the building base (footprint pushed out `inset` m),
+// sitting a hair above the lawn.
+export function buildApron(footprint, inset = 2.4) {
+  const ring = ensureWinding(footprint, true);
+  const geos = [];
+  const n = ring.length;
+  for (let e = 0; e < n; e++) {
+    const a = ring[e];
+    const b = ring[(e + 1) % n];
+    const ei = edgeInfo(a, b);
+    if (ei.len < 1.5) continue;
+    const mx = (a[0] + b[0]) / 2;
+    const mz = (a[1] + b[1]) / 2;
+    geos.push(
+      boxAlongEdge(ei.len + inset * 2, 0.08, inset, mx + ei.nx * (inset / 2), 0.04, mz + ei.nz * (inset / 2), ei.rotY),
+    );
+  }
+  return mergeOrNull(geos);
 }
 
 export function buildPlinth(footprint) {

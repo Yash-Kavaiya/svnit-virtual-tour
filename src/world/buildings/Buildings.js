@@ -1,28 +1,12 @@
 import * as THREE from 'three';
 import { extrudeFootprint, footprintBounds } from './extrude.js';
 import { facadeMaterial } from './FacadeMaterial.js';
-import { buildFacadeDetail, buildRoofCrown, buildPlinth } from './facadeDetails.js';
+import { buildFacadeDetail, buildRoofCrown, buildPlinth, buildApron } from './facadeDetails.js';
 import { populateRoof } from './RoofKit.js';
 import { attachEntrance, nearestRoadPointTo } from './Entrance.js';
 import { lodLevel } from './lod.js';
 import { hashString } from '../../core/rng.js';
 import { Settings } from '../../core/Settings.js';
-
-const CATEGORY_COLOR = {
-  academic: '#dccdae',
-  admin: '#d3dbe4',
-  library: '#e9dcc0',
-  hostel: '#ddd0b2',
-  workshop: '#c9ccd0',
-  lab: '#d6c7ad',
-  sports: '#c1d1bc',
-  dining: '#e3cca9',
-  health: '#e6cccc',
-  utility: '#cec6b3',
-  residence: '#e9dfc6',
-  gate: '#dcc7a0',
-  amenity: '#cec6b3',
-};
 
 const ACCENT_MAT_CACHE = new Map();
 const CONCRETE_MAT_CACHE = new Map();
@@ -45,7 +29,6 @@ export function createBuildings(campus, registry) {
     bgroup.userData.buildingId = b.id;
 
     const { w, d, angle } = footprintBounds(b.footprint);
-    const flatColor = CATEGORY_COLOR[b.category] ?? '#ccc4b3';
     const family = b.meta.facade ?? b.category;
 
     const facade = facadeMaterial({ category: family, accent: b.meta.accent, seed, levels: b.levels });
@@ -96,6 +79,17 @@ export function createBuildings(campus, registry) {
       registry,
     });
 
+    // paved apron around the base so buildings don't float on grass
+    const apronGeo = buildApron(b.footprint, 2.4);
+    if (apronGeo) {
+      const apron = new THREE.Mesh(
+        apronGeo,
+        registry.mat('apron', () => new THREE.MeshStandardMaterial({ color: '#b3aa97', roughness: 1 })),
+      );
+      apron.receiveShadow = true;
+      full.add(apron);
+    }
+
     let doorWorldPos;
     try {
       const target = nearestRoadPointTo(b.centroid, roads);
@@ -105,6 +99,7 @@ export function createBuildings(campus, registry) {
         name: b.name.replace(/\s*\(.*\)\s*/, ''),
         target,
         accent: b.meta.accent,
+        category: b.category,
       });
       doorWorldPos = ent.doorWorldPos;
     } catch {
@@ -118,15 +113,6 @@ export function createBuildings(campus, registry) {
     mid.add(midShell);
     mid.add(buildRoofCrown(b.footprint, b.height, { concreteMat, copingMat: trimMat }));
 
-    // ---- FAR: flat box
-    const far = new THREE.Mesh(
-      registry.geo('far-box', () => new THREE.BoxGeometry(1, 1, 1)),
-      registry.mat(`far-${b.category}`, () => new THREE.MeshLambertMaterial({ color: flatColor })),
-    );
-    far.scale.set(Math.max(w, 4), b.height, Math.max(d, 4));
-    far.position.set(b.centroid[0], b.height / 2, b.centroid[1]);
-    far.rotation.y = angle;
-
     // ---- non-rendering raycast proxy
     const pick = new THREE.Mesh(
       registry.geo('pick-box', () => new THREE.BoxGeometry(1, 1, 1)),
@@ -137,10 +123,9 @@ export function createBuildings(campus, registry) {
     pick.rotation.y = angle;
     pick.userData.buildingId = b.id;
 
-    bgroup.add(full, mid, far, pick);
+    bgroup.add(full, mid, pick);
     full.visible = false;
-    mid.visible = false;
-    far.visible = true;
+    mid.visible = true;
 
     group.add(bgroup);
     pickables.push(pick);
@@ -162,11 +147,10 @@ export function createBuildings(campus, registry) {
         tmp.set(record.centroid[0], 0, record.centroid[1]);
         const dist = tmp.distanceTo(cameraPos);
         const level = lodLevel(dist, q);
-        const [full, mid, far] = bg.children;
+        const [full, mid] = bg.children;
         full.visible = level === 'full';
         mid.visible = level === 'mid';
-        far.visible = level === 'far';
-        bg.visible = dist < 1700;
+        bg.visible = dist < 1800;
       }
     },
     dispose() {
