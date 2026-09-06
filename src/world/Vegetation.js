@@ -153,7 +153,8 @@ export function createVegetation(campus, registry) {
 
       dummy.position.set(x, model.canopy.offsetY * s, z);
       dummy.rotation.set(0, rot, 0);
-      dummy.scale.set(cs[0] * s * (0.85 + rr() * 0.4), cs[1] * s * (0.8 + rr() * 0.5), cs[2] * s * (0.85 + rr() * 0.4));
+      const cj = 0.92 + rr() * 0.18;
+      dummy.scale.set(cs[0] * s * cj, cs[1] * s * (0.95 + rr() * 0.15), cs[2] * s * cj);
       dummy.updateMatrix();
       canopyMesh.setMatrixAt(i, dummy.matrix);
 
