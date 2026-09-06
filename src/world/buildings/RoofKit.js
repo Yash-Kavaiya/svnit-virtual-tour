@@ -20,30 +20,7 @@ export function populateRoof(group, { footprint, height, category, seed = 1, reg
     solar: registry.mat('roof-solar', () => new THREE.MeshStandardMaterial({ color: '#1b2b45', roughness: 0.3, metalness: 0.4 })),
   };
 
-  // parapet as a single hollow frame
-  const parShape = new THREE.Shape();
-  parShape.moveTo(-w / 2, -d / 2);
-  parShape.lineTo(w / 2, -d / 2);
-  parShape.lineTo(w / 2, d / 2);
-  parShape.lineTo(-w / 2, d / 2);
-  parShape.closePath();
-  const hole = new THREE.Path();
-  const iw = w / 2 - 0.25;
-  const id = d / 2 - 0.25;
-  hole.moveTo(-iw, -id);
-  hole.lineTo(iw, -id);
-  hole.lineTo(iw, id);
-  hole.lineTo(-iw, id);
-  hole.closePath();
-  parShape.holes.push(hole);
-  const parapet = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(parShape, { depth: 1.0, bevelEnabled: false }),
-    mats.box,
-  );
-  parapet.rotation.x = -Math.PI / 2;
-  parapet.position.set(cx, height + 1.0, cz);
-  parapet.rotation.z = angle;
-  roof.add(parapet);
+  // (parapet + cornice are built by facadeDetails.buildRoofCrown)
 
   // water tanks on shared instanced meshes-worth of geometry (few, so plain)
   const tanks = category === 'hostel' ? 2 + Math.floor(rnd() * 2) : rnd() < 0.6 ? 1 : 0;

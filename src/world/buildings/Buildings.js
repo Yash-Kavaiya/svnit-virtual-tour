@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { extrudeFootprint, footprintBounds } from './extrude.js';
 import { facadeMaterial } from './FacadeMaterial.js';
+import { buildFacadeDetail, buildRoofCrown, buildPlinth } from './facadeDetails.js';
 import { populateRoof } from './RoofKit.js';
 import { attachEntrance, nearestRoadPointTo } from './Entrance.js';
 import { lodLevel } from './lod.js';
@@ -8,27 +9,33 @@ import { hashString } from '../../core/rng.js';
 import { Settings } from '../../core/Settings.js';
 
 const CATEGORY_COLOR = {
-  academic: '#d8c7a8',
-  admin: '#cdd6e0',
-  library: '#e7d9be',
-  hostel: '#d9cdb0',
-  workshop: '#c6cace',
-  lab: '#d2c3ac',
-  sports: '#bcd0b8',
-  dining: '#e0c9a8',
-  health: '#e4c9c9',
-  utility: '#cbc3b2',
-  residence: '#e6dcc4',
-  gate: '#d8c39c',
-  amenity: '#cbc3b2',
+  academic: '#dccdae',
+  admin: '#d3dbe4',
+  library: '#e9dcc0',
+  hostel: '#ddd0b2',
+  workshop: '#c9ccd0',
+  lab: '#d6c7ad',
+  sports: '#c1d1bc',
+  dining: '#e3cca9',
+  health: '#e6cccc',
+  utility: '#cec6b3',
+  residence: '#e9dfc6',
+  gate: '#dcc7a0',
+  amenity: '#cec6b3',
 };
+
+const ACCENT_MAT_CACHE = new Map();
+const CONCRETE_MAT_CACHE = new Map();
+function sharedMat(cache, key, make) {
+  if (!cache.has(key)) cache.set(key, make());
+  return cache.get(key);
+}
 
 export function createBuildings(campus, registry) {
   const group = new THREE.Group();
   group.name = 'buildings';
   const pickables = [];
   const byId = new Map();
-
   const roads = campus.roads;
 
   for (const b of campus.buildings) {
@@ -37,31 +44,49 @@ export function createBuildings(campus, registry) {
     bgroup.name = b.name;
     bgroup.userData.buildingId = b.id;
 
-    const { w, d } = footprintBounds(b.footprint);
+    const { w, d, angle } = footprintBounds(b.footprint);
     const flatColor = CATEGORY_COLOR[b.category] ?? '#ccc4b3';
+    const family = b.meta.facade ?? b.category;
 
-    // FULL
-    const full = new THREE.Group();
-    const wallGeo = extrudeFootprint(b.footprint, b.height);
-    const facade = facadeMaterial({
-      category: b.meta.facade ?? b.category,
-      accent: b.meta.accent,
-      seed,
-      levels: b.levels,
+    const facade = facadeMaterial({ category: family, accent: b.meta.accent, seed, levels: b.levels });
+    const concreteMat = sharedMat(CONCRETE_MAT_CACHE, family, () => {
+      const base = new THREE.Color(facade.userData?.wallColor ?? '#d9d2c4');
+      base.lerp(new THREE.Color('#8f8676'), 0.42); // weathered RCC, not glaring white
+      return new THREE.MeshStandardMaterial({ color: base, roughness: 0.96 });
     });
-    const shell = new THREE.Mesh(wallGeo, facade);
+    const accentMat = sharedMat(ACCENT_MAT_CACHE, b.meta.accent ?? family, () =>
+      new THREE.MeshStandardMaterial({ color: b.meta.accent ?? '#a8542f', roughness: 0.85 }),
+    );
+    const trimMat = sharedMat(CONCRETE_MAT_CACHE, `trim-${family}`, () =>
+      new THREE.MeshStandardMaterial({ color: '#c7bfae', roughness: 0.9 }),
+    );
+    const plinthMat = registry.mat('plinth', () =>
+      new THREE.MeshStandardMaterial({ color: '#6f6252', roughness: 0.95 }),
+    );
+
+    // ---- FULL: shell + 3D detail + plinth + roof clutter + entrance
+    const full = new THREE.Group();
+    const shell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), facade);
     shell.castShadow = true;
     shell.receiveShadow = true;
     full.add(shell);
 
-    // plinth (wider base course)
-    const plinthGeo = extrudeFootprint(offsetRing(b.footprint, 0.35), 1.0);
-    const plinth = new THREE.Mesh(
-      plinthGeo,
-      registry.mat('plinth', () => new THREE.MeshStandardMaterial({ color: '#8b8069', roughness: 0.95 })),
+    full.add(
+      buildFacadeDetail(b.footprint, b.height, b.levels, {
+        concreteMat,
+        accentMat,
+        trimMat,
+        copingMat: trimMat,
+        accent: b.meta.accent,
+      }),
     );
-    plinth.receiveShadow = true;
-    full.add(plinth);
+
+    const plinthGeo = buildPlinth(b.footprint);
+    if (plinthGeo) {
+      const plinth = new THREE.Mesh(plinthGeo, plinthMat);
+      plinth.receiveShadow = true;
+      full.add(plinth);
+    }
 
     populateRoof(full, {
       footprint: b.footprint,
@@ -86,42 +111,33 @@ export function createBuildings(campus, registry) {
       doorWorldPos = new THREE.Vector3(b.centroid[0], 1.7, b.centroid[1]);
     }
 
-    // MID — extruded shell with a cheap flat facade, no clutter
-    const mid = new THREE.Mesh(
-      extrudeFootprint(b.footprint, b.height),
-      registry.mat(`mid-${b.category}`, () =>
-        new THREE.MeshStandardMaterial({ color: flatColor, roughness: 0.9 }),
-      ),
-    );
-    mid.castShadow = true;
-    mid.userData.buildingId = b.id;
+    // ---- MID: same facade material + roof crown only (no chajjas/clutter)
+    const mid = new THREE.Group();
+    const midShell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), facade);
+    midShell.castShadow = true;
+    mid.add(midShell);
+    mid.add(buildRoofCrown(b.footprint, b.height, { concreteMat, copingMat: trimMat }));
 
-    // FAR — flat-shaded box
+    // ---- FAR: flat box
     const far = new THREE.Mesh(
       registry.geo('far-box', () => new THREE.BoxGeometry(1, 1, 1)),
-      registry.mat(`far-${b.category}`, () =>
-        new THREE.MeshLambertMaterial({ color: flatColor }),
-      ),
+      registry.mat(`far-${b.category}`, () => new THREE.MeshLambertMaterial({ color: flatColor })),
     );
     far.scale.set(Math.max(w, 4), b.height, Math.max(d, 4));
     far.position.set(b.centroid[0], b.height / 2, b.centroid[1]);
-    {
-      const fb = footprintBounds(b.footprint);
-      far.rotation.y = fb.angle;
-    }
+    far.rotation.y = angle;
 
-    // always-present, non-rendering raycast proxy (LOD-independent)
+    // ---- non-rendering raycast proxy
     const pick = new THREE.Mesh(
       registry.geo('pick-box', () => new THREE.BoxGeometry(1, 1, 1)),
       registry.mat('pick-mat', () => new THREE.MeshBasicMaterial({ visible: false })),
     );
     pick.scale.set(Math.max(w, 4), b.height, Math.max(d, 4));
     pick.position.set(b.centroid[0], b.height / 2, b.centroid[1]);
-    pick.rotation.y = footprintBounds(b.footprint).angle;
+    pick.rotation.y = angle;
     pick.userData.buildingId = b.id;
 
     bgroup.add(full, mid, far, pick);
-    // start at the cheapest LOD; update() promotes nearby buildings
     full.visible = false;
     mid.visible = false;
     far.visible = true;
@@ -150,27 +166,17 @@ export function createBuildings(campus, registry) {
         full.visible = level === 'full';
         mid.visible = level === 'mid';
         far.visible = level === 'far';
-        // cull the whole building past a hard distance
-        bg.visible = dist < 1600;
+        bg.visible = dist < 1700;
       }
     },
     dispose() {
       group.traverse((o) => {
         if (o.isMesh && o.geometry) o.geometry.dispose();
-        if (o.dispose) o.dispose();
       });
+      for (const m of ACCENT_MAT_CACHE.values()) m.dispose();
+      for (const m of CONCRETE_MAT_CACHE.values()) m.dispose();
+      ACCENT_MAT_CACHE.clear();
+      CONCRETE_MAT_CACHE.clear();
     },
   };
-}
-
-function offsetRing(ring, delta) {
-  // crude outward offset via centroid scaling — fine for a short plinth course
-  const cx = ring.reduce((s, p) => s + p[0], 0) / ring.length;
-  const cz = ring.reduce((s, p) => s + p[1], 0) / ring.length;
-  return ring.map(([x, z]) => {
-    const dx = x - cx;
-    const dz = z - cz;
-    const len = Math.hypot(dx, dz) || 1;
-    return [x + (dx / len) * delta, z + (dz / len) * delta];
-  });
 }
