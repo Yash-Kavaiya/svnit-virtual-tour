@@ -8,6 +8,9 @@ import { createGround } from './Ground.js';
 import { createRoads } from './Roads.js';
 import { createWater } from './Water.js';
 import { createBuildings } from './buildings/Buildings.js';
+import { createVegetation } from './Vegetation.js';
+import { createStreetKit } from './StreetKit.js';
+import { createLandmarks } from './Landmarks.js';
 import { PlayerController } from '../player/PlayerController.js';
 import { Collider } from '../player/Collision.js';
 import { TIME_PRESETS } from './TimeOfDay.js';
@@ -37,8 +40,21 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
   const roads = await step('Roads', () => createRoads(campus, registry));
   const water = await step('Water', () => createWater(campus, registry));
   const buildings = await step('Buildings', () => createBuildings(campus, registry));
+  const vegetation = await step('Trees & gardens', () => createVegetation(campus, registry));
+  const streetKit = await step('Street furniture', () =>
+    createStreetKit(campus, registry, buildings),
+  );
+  const landmarks = await step('Landmarks', () => createLandmarks(campus, registry));
 
-  scene.add(ground.group, roads.group, water.group, buildings.group);
+  scene.add(
+    ground.group,
+    roads.group,
+    water.group,
+    buildings.group,
+    vegetation.group,
+    streetKit.group,
+    landmarks.group,
+  );
   scene.fog = new THREE.FogExp2(TIME_PRESETS.noon.fogColor, TIME_PRESETS.noon.fogDensity);
 
   const collider = new Collider(campus.buildings, campus.boundary);
@@ -107,6 +123,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
       lighting.updateShadowTarget(camera.position);
       water.update(dt);
       buildings.update(camera.position);
+      streetKit.update(dt);
     },
     dispose() {
       events.off('settings:change', onSettings);
@@ -117,6 +134,9 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
       roads.dispose();
       water.dispose();
       buildings.dispose();
+      vegetation.dispose();
+      streetKit.dispose();
+      landmarks.dispose();
       registry.disposeAll();
     },
   };

@@ -288,6 +288,10 @@ export function buildCampus(overpassJson, opts = {}) {
     const [x, zz] = proj.toXZ(z);
     pois.push({ name: z.name, type: 'zone', x: round(x), z: round(zz), rot: 0 });
   }
+  for (const p of curated.extraPois ?? []) {
+    const xz = p.xz ?? proj.toXZ(p);
+    pois.push({ name: p.name, type: p.type ?? 'poi', x: round(xz[0]), z: round(xz[1]), rot: p.rot ?? 0 });
+  }
 
   const gates = (curated.gates ?? []).map((g) => {
     const [x, z] = proj.toXZ(g);

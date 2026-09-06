@@ -250,6 +250,13 @@ export default {
   // A small ornamental pond by the central lawn for visual interest.
   extraWater: [{ name: 'Campus Lily Pond', footprintXZ: ellipse(-150, 40, 34, 22, 20) }],
 
+  // POIs OSM lacks inside the campus (local metres via `xz`).
+  extraPois: [
+    { name: 'Ganesh Temple', type: 'temple', xz: [-30, -40] },
+    { name: 'Central Library', type: 'building', xz: [-40, 30] },
+    { name: 'Open Air Theatre', type: 'poi', xz: [120, -30] },
+  ],
+
   gates: [{ name: 'Main Gate (Dumas Road)', lat: 21.1591, lon: 72.786, rot: 0, width: 16 }],
 
   zones: [

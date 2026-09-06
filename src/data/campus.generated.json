@@ -6936,6 +6936,27 @@
    "x": 92.87,
    "z": 407.12,
    "rot": 0
+  },
+  {
+   "name": "Ganesh Temple",
+   "type": "temple",
+   "x": -30,
+   "z": -40,
+   "rot": 0
+  },
+  {
+   "name": "Central Library",
+   "type": "building",
+   "x": -40,
+   "z": 30,
+   "rot": 0
+  },
+  {
+   "name": "Open Air Theatre",
+   "type": "poi",
+   "x": 120,
+   "z": -30,
+   "rot": 0
   }
  ],
  "gates": [
