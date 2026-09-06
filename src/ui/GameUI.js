@@ -149,7 +149,15 @@ export class GameUI {
     }
   }
 
+  setInteriorMode(inside) {
+    this._interior = inside;
+    this.hud.node.hidden = inside;
+    this.minimap.node.hidden = inside;
+    if (inside) this.closePanels();
+  }
+
   update(dt) {
+    if (this._interior) return;
     this.interaction.update();
     this.hud.update({ position: this.api.player.position, heading: this.api.player.heading });
     this.minimap.update({ position: this.api.player.position, heading: this.api.player.heading });

@@ -7,6 +7,8 @@ import { createCampusScene } from './world/Campus.js';
 import { Loading } from './ui/Loading.js';
 import { StartMenu } from './ui/StartMenu.js';
 import { GameUI } from './ui/GameUI.js';
+import { InteriorRouter } from './interiors/router.js';
+import { el } from './ui/dom.js';
 import campus from './data/campus.generated.json';
 
 const canvas = document.getElementById('scene');
@@ -36,7 +38,7 @@ function resize() {
   const w = Math.max(1, window.innerWidth);
   const h = Math.max(1, window.innerHeight);
   setSize(w, h);
-  const cam = scenes.active?.camera;
+  const cam = view?.camera;
   if (cam) {
     cam.aspect = w / h;
     cam.updateProjectionMatrix();
@@ -50,38 +52,68 @@ if (typeof ResizeObserver !== 'undefined') {
 const clock = new Clock();
 let running = false;
 let gameUI = null;
+let view = null; // current render target: campus scene or an interior scene
 
 function frame() {
   clock.tick();
   const dt = Math.min(clock.delta, 0.1);
-  if (running) {
+  if (running && view) {
     const paused = !!menu || (gameUI && gameUI.anyPanelOpen());
-    scenes.active?.update(paused ? 0 : dt);
-    gameUI?.update(dt);
+    view.update(paused ? 0 : dt);
+    if (view === campusView && !router?.inInterior) gameUI?.update(dt);
+    renderer.render(view.scene, view.camera);
   }
-  scenes.render();
   requestAnimationFrame(frame);
 }
 
 events.on('settings:change', ({ key }) => {
-  const cam = scenes.active?.camera;
+  const cam = view?.camera;
   if (key === 'fov' && cam) {
     cam.fov = Settings.get('fov');
     cam.updateProjectionMatrix();
   }
 });
 
-const scene = await scenes.activate('campus');
+const campusView = await scenes.activate('campus');
 loading.done();
+view = campusView;
 resize();
 running = true;
-const api = scene.api;
+const api = campusView.api;
 
 gameUI = new GameUI({
   root: uiRoot,
   fadeEl,
   api,
   onEnterInterior: (record) => events.emit('interior:request', record),
+});
+
+// interior enter/leave
+const interiorBanner = el('div', {
+  className: 'panel',
+  style: {
+    left: '50%',
+    top: '1rem',
+    transform: 'translateX(-50%)',
+    padding: '.4rem 1rem',
+    fontSize: '.85rem',
+    fontWeight: '600',
+  },
+});
+interiorBanner.hidden = true;
+uiRoot.append(interiorBanner);
+
+const router = new InteriorRouter({
+  domElement: canvas,
+  campusView,
+  onViewChange: (v) => {
+    view = v;
+    resize();
+    const inside = v !== campusView;
+    interiorBanner.hidden = !inside;
+    if (inside) interiorBanner.textContent = `${v.title}  ·  walk into the EXIT portal or press Esc to leave`;
+    gameUI.setInteriorMode?.(inside);
+  },
 });
 
 // --- menu handling
@@ -119,6 +151,16 @@ function openMenu() {
 }
 openMenu();
 
+events.on('interior:enter', () => {
+  menu?.hide();
+  menu = null;
+  gameUI?.closePanels();
+});
+events.on('tour:start', () => {
+  menu?.hide();
+  menu = null;
+});
+
 window.addEventListener('keydown', (e) => {
   if (e.code !== 'Escape') return;
   if (menu) {
@@ -126,6 +168,8 @@ window.addEventListener('keydown', (e) => {
     menu = null;
   } else if (gameUI?.anyPanelOpen()) {
     gameUI.closePanels();
+  } else if (router.inInterior) {
+    events.emit('interior:exit');
   } else {
     openMenu();
   }
