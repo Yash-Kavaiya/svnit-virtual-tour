@@ -10,13 +10,12 @@ const STANDBACK = 6;
 export function arrivalTransform(target, faceTowards) {
   const fx = faceTowards ? faceTowards.x - target.x : -target.x;
   const fz = faceTowards ? faceTowards.z - target.z : -target.z;
-  let l = Math.hypot(fx, fz);
+  const l = Math.hypot(fx, fz);
   let dx;
   let dz;
   if (l < 1e-4) {
     dx = 0;
     dz = 1;
-    l = 1;
   } else {
     dx = fx / l;
     dz = fz / l;
