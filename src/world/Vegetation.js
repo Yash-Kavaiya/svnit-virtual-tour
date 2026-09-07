@@ -47,6 +47,17 @@ export function scatterPoints({ bounds, count, seed = 1, reject, minSpacing = 6 
 
 const DENSITY = { low: 0, medium: 0.5, high: 1, ultra: 1.6 };
 
+// Per-tree canopy tint, returned as an [r, g, b] MULTIPLIER centred on 1.0.
+// It is written into `InstancedMesh.instanceColor`, which the shader multiplies
+// against `material.color` (the leaf green). Returning an absolute leaf colour
+// here would square the green and crush every canopy to near-black — so every
+// channel must stay close to white. `rr` is a 0..1 PRNG.
+export function canopyTint(rr) {
+  const shade = 0.82 + rr() * 0.34; // 0.82 .. 1.16 brightness
+  const warm = (rr() - 0.5) * 0.06; // faint warm/cool cast per tree
+  return [shade * (1 + warm), shade, shade * (1 - warm)];
+}
+
 export function createVegetation(campus, registry) {
   const group = new THREE.Group();
   group.name = 'vegetation';
@@ -151,8 +162,7 @@ export function createVegetation(campus, registry) {
     trunkMesh.castShadow = true;
     canopyMesh.castShadow = true;
     const cs = model.canopy.scale ?? [1, 1, 1];
-    const baseLeaf = new THREE.Color(model.canopy.material.color.getHex());
-    const tint = new THREE.Color();
+    const tint = new THREE.Color(); // per-instance multiplier — see canopyTint()
     pts.forEach(([x, z], i) => {
       const rr = mulberry32(hashString(`${x},${z}`));
       const s = 0.8 + rr() * 0.7;
@@ -171,7 +181,7 @@ export function createVegetation(campus, registry) {
       dummy.updateMatrix();
       canopyMesh.setMatrixAt(i, dummy.matrix);
 
-      tint.copy(baseLeaf).offsetHSL((rr() - 0.5) * 0.05, (rr() - 0.5) * 0.15, (rr() - 0.5) * 0.16);
+      tint.setRGB(...canopyTint(rr));
       canopyMesh.setColorAt(i, tint);
     });
     trunkMesh.instanceMatrix.needsUpdate = true;
