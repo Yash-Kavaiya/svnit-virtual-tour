@@ -15,6 +15,7 @@ export function extrudeFootprint(ring, height, opts = {}) {
   const uvs = [];
 
   // Walls
+  const wallVertStart = 0;
   let perim = 0;
   for (let i = 0; i < n; i++) {
     const a = r[i];
@@ -47,8 +48,11 @@ export function extrudeFootprint(ring, height, opts = {}) {
     }
   }
 
+  const wallVertCount = positions.length / 3 - wallVertStart;
+
   // Cap (roof slab). Try earcut; fall back to a centroid fan if it fails or
   // returns nothing (defensive — the pipeline already convex-cleans footprints).
+  const capVertStart = positions.length / 3;
   const contour = r.map(([x, z]) => new THREE.Vector2(x, z));
   const [cx, cz] = ringCentroid(r);
   let tris;
@@ -76,10 +80,15 @@ export function extrudeFootprint(ring, height, opts = {}) {
     }
   }
 
+  const capVertCount = positions.length / 3 - capVertStart;
+
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
   geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  // group 0 = walls (facade material), group 1 = roof cap (roof-slab material)
+  geo.addGroup(wallVertStart, wallVertCount, 0);
+  if (capVertCount > 0) geo.addGroup(capVertStart, capVertCount, 1);
   geo.userData.plinth = plinth;
   return geo;
 }

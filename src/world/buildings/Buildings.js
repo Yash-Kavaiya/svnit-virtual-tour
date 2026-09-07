@@ -46,10 +46,15 @@ export function createBuildings(campus, registry) {
     const plinthMat = registry.mat('plinth', () =>
       new THREE.MeshStandardMaterial({ color: '#6f6252', roughness: 0.95 }),
     );
+    // roof cap gets its own weathered-concrete slab material — the facade
+    // texture smeared across a roof read as a muddy void from above.
+    const roofSlabMat = registry.mat('roof-slab', () =>
+      new THREE.MeshStandardMaterial({ color: '#b0a996', roughness: 0.97 }),
+    );
 
     // ---- FULL: shell + 3D detail + plinth + roof clutter + entrance
     const full = new THREE.Group();
-    const shell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), facade);
+    const shell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), [facade, roofSlabMat]);
     shell.castShadow = true;
     shell.receiveShadow = true;
     full.add(shell);
@@ -108,7 +113,7 @@ export function createBuildings(campus, registry) {
 
     // ---- MID: same facade material + roof crown only (no chajjas/clutter)
     const mid = new THREE.Group();
-    const midShell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), facade);
+    const midShell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), [facade, roofSlabMat]);
     midShell.castShadow = true;
     mid.add(midShell);
     mid.add(buildRoofCrown(b.footprint, b.height, { concreteMat, copingMat: trimMat }));

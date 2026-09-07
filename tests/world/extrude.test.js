@@ -23,6 +23,15 @@ describe('extrudeFootprint', () => {
     const g = extrudeFootprint(RECT, 9);
     expect(g.getAttribute('uv')).toBeTruthy();
   });
+
+  it('splits walls and roof cap into separate material groups', () => {
+    const g = extrudeFootprint(RECT, 10);
+    const mats = g.groups.map((gr) => gr.materialIndex).sort();
+    expect(mats).toEqual([0, 1]); // 0 = facade walls, 1 = roof slab
+    const total = g.getAttribute('position').count;
+    const covered = g.groups.reduce((s, gr) => s + gr.count, 0);
+    expect(covered).toBe(total); // every vertex belongs to exactly one group
+  });
 });
 
 describe('footprintBounds', () => {
