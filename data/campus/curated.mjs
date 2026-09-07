@@ -159,6 +159,16 @@ export default {
       category: 'residence',
       description: "The Director's official residence.",
     },
+    // The SVNIT Canteen. OSM maps it as an unnamed building way here plus an
+    // amenity=cafe node ("Canteen", @21.16438,72.78602) on top of it.
+    w361364046: {
+      name: 'SVNIT Canteen',
+      category: 'dining',
+      floors: 2,
+      accent: '#c9873f',
+      description:
+        'The main campus canteen, on the edge of the academic zone — chai, samosas, thali plates and the between-lectures crowd. Marked wheelchair-accessible in OSM.',
+    },
   },
 
   extraBuildings: [
@@ -251,10 +261,7 @@ export default {
   extraWater: [{ name: 'Campus Lily Pond', footprintXZ: ellipse(-150, 40, 34, 22, 20) }],
 
   // POIs OSM lacks inside the campus (local metres via `xz`).
-  extraPois: [
-    { name: 'Ganesh Temple', type: 'temple', xz: [-25, 95] },
-    { name: 'Open Air Theatre', type: 'poi', xz: [135, -10] },
-  ],
+  extraPois: [{ name: 'Open Air Theatre', type: 'poi', xz: [135, -10] }],
 
   gates: [{ name: 'Main Gate (Dumas Road)', lat: 21.1591, lon: 72.786, rot: 0, width: 16 }],
 

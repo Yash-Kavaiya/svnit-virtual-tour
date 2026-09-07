@@ -25,7 +25,7 @@ const FACADE_BY_CATEGORY = {
   workshop: 'workshop',
   lab: 'academic',
   sports: 'utility',
-  dining: 'utility',
+  dining: 'dining',
   health: 'academic',
   utility: 'utility',
   residence: 'residence',
@@ -194,10 +194,13 @@ export function buildCampus(overpassJson, opts = {}) {
     );
   }
   for (const xb of curated.extraBuildings ?? []) {
+    const ringXZ = xb.footprintXZ
+      ? xb.footprintXZ.map(([x, z]) => [x, z])
+      : xb.footprintLatLon.map((p) => proj.toXZ(p));
     pushBuilding(
       xb.id,
       xb.name,
-      xb.footprintLatLon.map((p) => proj.toXZ(p)),
+      ringXZ,
       { 'building:levels': xb.levels },
       xb.levels,
       { ...(xb.meta ?? {}), category: xb.category, name: xb.name, floors: xb.levels },

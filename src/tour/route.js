@@ -51,6 +51,15 @@ export const TOUR_STOPS = [
     height: 12,
   },
   {
+    id: 'canteen',
+    title: 'Campus Canteen',
+    target: { building: /canteen/i },
+    narration:
+      'On the edge of the academic zone is the campus canteen — chai, samosas and thali plates, and where most of the campus ends up between lectures.',
+    dwell: 4,
+    height: 5,
+  },
+  {
     id: 'lt',
     title: 'Lecture Theatre',
     target: { building: /lt-2|lecture/i },
@@ -86,15 +95,6 @@ export const TOUR_STOPS = [
       'Students live in the residential zone — hostels named for Gajjar, Bhabha, Tagore, Raman, Swami Vivekananda, Nehru and Sarabhai for the men, and Narmad Bhavan for the women, plus the institute guest house.',
     dwell: 6,
     height: 14,
-  },
-  {
-    id: 'temple',
-    title: 'Campus Temple',
-    target: { poi: 'Ganesh Temple' },
-    narration:
-      'A small Ganesh shrine sits in a quiet corner of the campus — a place students stop by before exams.',
-    dwell: 4,
-    height: 4,
   },
   {
     id: 'aerial',

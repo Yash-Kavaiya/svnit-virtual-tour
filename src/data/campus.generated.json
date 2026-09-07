@@ -1870,8 +1870,8 @@
   },
   {
    "id": "w361364046",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "SVNIT Canteen",
+   "category": "dining",
    "footprint": [
     [
      89.07,
@@ -1902,13 +1902,14 @@
     100.67,
     -169.92
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -1.7424,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "description": "The main campus canteen, on the edge of the academic zone — chai, samosas, thali plates and the between-lectures crowd. Marked wheelchair-accessible in OSM.",
+    "facade": "dining",
+    "accent": "#c9873f",
     "roof": "flat",
     "hasInterior": false
    }
@@ -6935,13 +6936,6 @@
    "type": "zone",
    "x": 92.87,
    "z": 407.12,
-   "rot": 0
-  },
-  {
-   "name": "Ganesh Temple",
-   "type": "temple",
-   "x": -25,
-   "z": 95,
    "rot": 0
   },
   {

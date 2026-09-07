@@ -150,7 +150,7 @@ export class GameUI {
     if (obj.userData?.landmark) {
       return {
         name: obj.userData.landmark.name,
-        category: obj.userData.landmark.kind === 'temple' ? 'amenity' : 'amenity',
+        category: 'amenity',
         meta: { description: this.#landmarkBlurb(obj.userData.landmark) },
       };
     }
@@ -159,7 +159,6 @@ export class GameUI {
 
   #landmarkBlurb(l) {
     if (l.kind === 'gate') return 'The main entrance to the SVNIT campus from Dumas Road.';
-    if (l.kind === 'temple') return 'A small campus shrine — a quiet corner of the campus.';
     if (l.kind === 'memorial') {
       return 'Statue of Sardar Vallabhbhai Patel, the "Iron Man of India", after whom the institute is named.';
     }

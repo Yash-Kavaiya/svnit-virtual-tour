@@ -118,3 +118,39 @@ describe('buildCampus', () => {
     expect(JSON.stringify(again)).toBe(JSON.stringify(campus));
   });
 });
+
+describe('buildCampus curated overlay', () => {
+  const curated = {
+    buildings: {},
+    gates: [],
+    zones: [],
+    extraBuildings: [
+      {
+        id: 'x-canteen',
+        name: 'SVNIT Canteen',
+        category: 'dining',
+        levels: 2,
+        // near the FIXTURE boundary centroid, given directly in local metres
+        footprintXZ: [
+          [10, 10],
+          [40, 10],
+          [40, 34],
+          [10, 34],
+        ],
+        meta: { description: 'test canteen' },
+      },
+    ],
+  };
+  const campus = buildCampus(FIXTURE, { curated });
+
+  it('places a footprintXZ extraBuilding without lat/lon', () => {
+    const c = campus.buildings.find((b) => b.name === 'SVNIT Canteen');
+    expect(c).toBeTruthy();
+    expect(c.category).toBe('dining');
+    expect(c.meta.facade).toBe('dining');
+    expect(c.levels).toBe(2);
+  });
+  it('stays schema-valid with the overlay', () => {
+    expect(validateCampusData(campus).ok).toBe(true);
+  });
+});

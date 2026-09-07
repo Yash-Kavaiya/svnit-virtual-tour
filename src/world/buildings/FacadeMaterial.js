@@ -60,6 +60,17 @@ export const FACADE_PARAMS = {
     winGap: 1.2,
     hasChhajja: false,
   },
+  dining: {
+    wall: '#f0e6cd',
+    band: '#c9873f',
+    glass: '#a6cccb',
+    frame: '#5c5348',
+    plinth: '#7a6a52',
+    glazingRatio: 0.62,
+    winW: 3.0,
+    winGap: 0.6,
+    hasChhajja: true,
+  },
   utility: {
     wall: '#d6cdb9',
     band: '#8f8674',

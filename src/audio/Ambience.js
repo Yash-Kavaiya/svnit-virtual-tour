@@ -1,4 +1,4 @@
-import { makeNoiseBuffer, birdChirp, bell, footstep, distanceGain } from './synth.js';
+import { makeNoiseBuffer, birdChirp, footstep, distanceGain } from './synth.js';
 import { Settings } from '../core/Settings.js';
 import { events } from '../core/events.js';
 
@@ -86,12 +86,6 @@ export class Ambience {
     this.ready = true;
     this.#applyVolumes();
     this.#applyTimeOfDay();
-
-    this._templeTimer = setInterval(() => {
-      if (this.ctx && this._nearTemple && Math.random() < 0.25) {
-        bell(this.ctx, this.ambBus, 0, 300);
-      }
-    }, 9000);
   }
 
   #applyVolumes() {
@@ -134,14 +128,10 @@ export class Ambience {
     }
     // breeze rises in open ground (far from any building handled loosely by y)
     this.breezeGain.gain.setTargetAtTime(0.12, this.ctx.currentTime, 1);
-
-    const temple = this.campus.pois?.find((p) => p.type === 'temple');
-    this._nearTemple = temple && Math.hypot(position.x - temple.x, position.z - temple.z) < 50;
   }
 
   stop() {
     clearInterval(this._birdTimer);
-    clearInterval(this._templeTimer);
     events.off('settings:change', this._onSettings);
     events.off('player:step', this._onStep);
     events.off('interior:enter', this._onInterior);

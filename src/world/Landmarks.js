@@ -11,11 +11,6 @@ export function createLandmarks(campus, registry) {
     campus.pois.find((p) => /statue|patel|sardar/i.test(p.name));
   if (statuePoi) group.add(makeStatue(statuePoi));
 
-  const templePoi =
-    campus.pois.find((p) => p.type === 'temple') ||
-    campus.pois.find((p) => /temple|mandir/i.test(p.name));
-  if (templePoi) group.add(makeTemple(templePoi));
-
   for (const gate of campus.gates ?? []) {
     const centre = [
       (campus.bounds.minX + campus.bounds.maxX) / 2,
@@ -94,61 +89,6 @@ function makeStatue(poi) {
   g.add(plaque);
 
   g.userData.landmark = { name: 'Sardar Vallabhbhai Patel Statue', kind: 'memorial' };
-  return g;
-}
-
-function makeTemple(poi) {
-  const g = new THREE.Group();
-  g.position.set(poi.x, 0, poi.z);
-  g.userData.poi = poi;
-
-  const wall = new THREE.MeshStandardMaterial({ color: '#efe6d2', roughness: 1 });
-  const saffron = new THREE.MeshStandardMaterial({ color: '#e08a2e', roughness: 0.8 });
-  const gold = new THREE.MeshStandardMaterial({ color: '#d8b24a', roughness: 0.4, metalness: 0.5 });
-
-  const base = new THREE.Mesh(new THREE.BoxGeometry(6, 0.5, 6), wall);
-  base.position.y = 0.25;
-  base.receiveShadow = true;
-  g.add(base);
-
-  const sanctum = new THREE.Mesh(new THREE.BoxGeometry(3.2, 3, 3.2), wall);
-  sanctum.position.y = 2;
-  sanctum.castShadow = true;
-  g.add(sanctum);
-
-  // shikhara — stepped tower
-  for (let i = 0; i < 5; i++) {
-    const s = 2.8 - i * 0.5;
-    const tier = new THREE.Mesh(new THREE.BoxGeometry(s, 0.7, s), saffron);
-    tier.position.y = 3.7 + i * 0.7;
-    tier.rotation.y = 0.02 * i;
-    tier.castShadow = true;
-    g.add(tier);
-  }
-  const amalaka = new THREE.Mesh(new THREE.SphereGeometry(0.55, 12, 10), gold);
-  amalaka.position.y = 7.4;
-  const kalash = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.7, 8), gold);
-  kalash.position.y = 8.0;
-  g.add(amalaka, kalash);
-
-  // mandapa porch
-  const porch = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.2, 2), wall);
-  porch.position.set(0, 3, 2.4);
-  for (const sx of [-1.3, 1.3]) {
-    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 2.8, 8), wall);
-    col.position.set(sx, 1.6, 3.2);
-    g.add(col);
-  }
-  g.add(porch);
-
-  // flag
-  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3, 6), gold);
-  pole.position.set(2.4, 4.5, 0);
-  const flag = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.6), saffron);
-  flag.position.set(2.9, 5.6, 0);
-  g.add(pole, flag);
-
-  g.userData.landmark = { name: 'Ganesh Temple', kind: 'temple' };
   return g;
 }
 
