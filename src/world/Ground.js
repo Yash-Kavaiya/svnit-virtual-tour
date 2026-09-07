@@ -23,7 +23,7 @@ export function createGround(campus, registry) {
 
   // Base ground plane
   const groundTex = registry.tex('grass-base', () =>
-    grassTexture({ base: '#66763f', repeat: Math.max(w, d) / 6, seed: 21 }),
+    grassTexture({ base: '#6e8043', repeat: Math.max(w, d) / 6, seed: 21 }),
   );
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(w, d),
@@ -34,9 +34,12 @@ export function createGround(campus, registry) {
   ground.receiveShadow = true;
   group.add(ground);
 
-  // Campus land pad — slightly lusher grass inside the boundary
+  // Campus land pad — slightly lusher grass inside the boundary.
+  // `ShapeGeometry` UVs are raw metres, so `repeat` is tiles-per-metre: 0.2
+  // gives a ~5 m grass tile. (A boundary-scaled value here tiled hundreds of
+  // times per metre and moired down to a flat, muddy mush.)
   const padTex = registry.tex('grass-pad', () =>
-    grassTexture({ base: '#5c6f38', repeat: Math.max(w, d) / 10, seed: 42 }),
+    grassTexture({ base: '#647c3d', repeat: 0.2, seed: 42 }),
   );
   const padShape = shapeFromRing(ensureWinding(campus.boundary, true));
   const pad = new THREE.Mesh(
@@ -48,11 +51,11 @@ export function createGround(campus, registry) {
   pad.receiveShadow = true;
   group.add(pad);
 
-  // Green polygons (parks/gardens) — a maintained-lawn patch. Same grass
-  // texture as the campus pad (just a touch lusher) so it reads as mown grass
-  // rather than a flat dark slab dropped on the terrain.
+  // Green polygons (parks/gardens) — read them as manicured lawn quadrangles:
+  // a touch BRIGHTER and lusher than the surrounding campus pad, textured so
+  // they never flatten into a dark slab dropped on the terrain.
   const greenTex = registry.tex('grass-green', () =>
-    grassTexture({ base: '#55702f', repeat: Math.max(w, d) / 9, seed: 63 }),
+    grassTexture({ base: '#6d8440', repeat: 0.25, seed: 63 }),
   );
   const greenMat = new THREE.MeshStandardMaterial({ map: greenTex, roughness: 1 });
   for (const g of campus.greens ?? []) {
