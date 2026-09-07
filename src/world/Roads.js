@@ -87,7 +87,9 @@ export function createRoads(campus, registry) {
   const asphaltMat = registry.mat('road-asphalt', () => {
     const tex = asphaltTexture({ repeat: 1, seed: 13 });
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    return new THREE.MeshStandardMaterial({ map: tex, color: '#6b6b70', roughness: 0.92 });
+    // texture already carries the asphalt tone; a coloured tint on top only
+    // drove it to near-black in shade. Keep the tint white.
+    return new THREE.MeshStandardMaterial({ map: tex, color: '#ffffff', roughness: 0.92 });
   });
   const pathMat = registry.mat('road-path', () => {
     const tex = concreteTexture({ tint: '#c2b49a', repeat: 1, seed: 17 });

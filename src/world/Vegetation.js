@@ -67,8 +67,14 @@ export function createVegetation(campus, registry) {
 
   const { bounds, buildings, roads, water } = campus;
 
-  // rejection: inside a building footprint (+3 m), inside water, or on a road
-  const buildingRings = buildings.map((b) => b.footprint);
+  // rejection: too close to a building wall, inside water, or on a road.
+  // Hero buildings (library / admin / auditorium) keep a wider forecourt so
+  // their facades and entrances are never buried in trees.
+  const HERO = new Set(['library', 'admin', 'auditorium']);
+  const buildingRings = buildings.map((b) => ({
+    ring: b.footprint,
+    pad: HERO.has(b.category) ? 15 : 6.5,
+  }));
   const waterRings = (water ?? []).map((w) => w.polygon);
   // keep a clear apron around each gate (the spawn area)
   const centre = [
@@ -84,7 +90,12 @@ export function createVegetation(campus, registry) {
 
   const reject = (x, z) => {
     for (const s of spawnSpots) if (Math.hypot(x - s[0], z - s[1]) < 14) return true;
-    for (const r of buildingRings) if (pointInRing([x, z], inflate(r, 3))) return true;
+    for (const { ring, pad } of buildingRings) {
+      if (pointInRing([x, z], ring)) return true;
+      for (let i = 0; i < ring.length; i++) {
+        if (distToSeg(x, z, ring[i], ring[(i + 1) % ring.length]) < pad) return true;
+      }
+    }
     for (const r of waterRings) if (pointInRing([x, z], r)) return true;
     for (const road of roads) {
       for (let i = 0; i < road.path.length - 1; i++) {
@@ -118,14 +129,14 @@ export function createVegetation(campus, registry) {
     }
   }
 
-  // --- scattered groves
-  const scatterCount = Math.round(900 * density);
+  // --- scattered groves (kept airy — a lawned campus, not a forest)
+  const scatterCount = Math.round(680 * density);
   const scattered = scatterPoints({
     bounds,
     count: scatterCount,
     seed: 4242,
     reject,
-    minSpacing: 9,
+    minSpacing: 11,
   });
 
   const all = avenue.concat(scattered);
@@ -236,17 +247,6 @@ export function createVegetation(campus, registry) {
       });
     },
   };
-}
-
-function inflate(ring, d) {
-  const cx = ring.reduce((s, p) => s + p[0], 0) / ring.length;
-  const cz = ring.reduce((s, p) => s + p[1], 0) / ring.length;
-  return ring.map(([x, z]) => {
-    const dx = x - cx;
-    const dz = z - cz;
-    const l = Math.hypot(dx, dz) || 1;
-    return [x + (dx / l) * d, z + (dz / l) * d];
-  });
 }
 
 function distToSeg(px, pz, a, b) {

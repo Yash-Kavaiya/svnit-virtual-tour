@@ -48,8 +48,13 @@ export function createGround(campus, registry) {
   pad.receiveShadow = true;
   group.add(pad);
 
-  // Green polygons (parks/gardens) — a darker, richer patch
-  const greenMat = new THREE.MeshStandardMaterial({ color: '#4c6a2e', roughness: 1 });
+  // Green polygons (parks/gardens) — a maintained-lawn patch. Same grass
+  // texture as the campus pad (just a touch lusher) so it reads as mown grass
+  // rather than a flat dark slab dropped on the terrain.
+  const greenTex = registry.tex('grass-green', () =>
+    grassTexture({ base: '#55702f', repeat: Math.max(w, d) / 9, seed: 63 }),
+  );
+  const greenMat = new THREE.MeshStandardMaterial({ map: greenTex, roughness: 1 });
   for (const g of campus.greens ?? []) {
     if (!g.polygon || g.polygon.length < 3) continue;
     const mesh = new THREE.Mesh(new THREE.ShapeGeometry(shapeFromRing(g.polygon)), greenMat);

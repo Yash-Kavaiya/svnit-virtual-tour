@@ -112,15 +112,15 @@ export function concreteTexture({ tint = '#b8b4ad', size = 256, repeat = 1, seed
   return finish(canvas, repeat);
 }
 
-export function asphaltTexture({ size = 256, repeat = 1, seed = 11 } = {}) {
-  if (!canvasSupported()) return flatTexture('#37383c');
+export function asphaltTexture({ base = '#55565c', size = 256, repeat = 1, seed = 11 } = {}) {
+  if (!canvasSupported()) return flatTexture(base);
   const { canvas, ctx } = makeCanvas(size);
   const rnd = mulberry32(seed);
-  ctx.fillStyle = '#37383c';
+  ctx.fillStyle = base;
   ctx.fillRect(0, 0, size, size);
   for (let i = 0; i < 2600; i++) {
-    const v = 30 + rnd() * 70;
-    ctx.fillStyle = `rgba(${v},${v},${v + 4},${0.05 + rnd() * 0.15})`;
+    const v = 60 + rnd() * 90;
+    ctx.fillStyle = `rgba(${v},${v},${v + 4},${0.05 + rnd() * 0.14})`;
     ctx.fillRect(rnd() * size, rnd() * size, 1 + rnd() * 2, 1 + rnd() * 2);
   }
   return finish(canvas, repeat);
