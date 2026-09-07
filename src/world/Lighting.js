@@ -10,7 +10,7 @@ export function createLighting(scene, renderer) {
   const hemi = new THREE.HemisphereLight('#bcd8ff', '#5a4d3a', 0.9);
   scene.add(hemi);
 
-  const ambient = new THREE.AmbientLight('#6a6a6a', 0.25);
+  const ambient = new THREE.AmbientLight('#9a9a9a', 0.75);
   scene.add(ambient);
 
   const sun = new THREE.DirectionalLight('#fff4e0', 3.1);
@@ -52,6 +52,7 @@ export function createLighting(scene, renderer) {
     hemi.groundColor.set(p.hemiGround);
     hemi.intensity = p.hemiIntensity;
     ambient.color.set(p.ambient);
+    ambient.intensity = p.ambientIntensity ?? 0.4;
     sun.color.set(p.sunColor);
     sun.intensity = p.sunIntensity;
     renderer.toneMappingExposure = p.exposure;
