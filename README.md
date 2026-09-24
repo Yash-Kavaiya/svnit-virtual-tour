@@ -8,14 +8,15 @@ You walk or free-fly through a navigable 3D model of the campus whose
 **layout, road network, building footprints, main entrance and points of
 interest come from real OpenStreetMap data**, with procedurally generated Indian-institutional
 building architecture, real building name-boards, landscaping, landmarks
-(the Sardar Patel statue and the main gate), ambient life and sound,
-a guided-tour mode, a minimap, and clickable building information.
+(the Sardar Patel statue and both entrance gates), ambient life and sound,
+a guided tour that visits every building, a minimap, and clickable building information.
 
 Three buildings are enterable with hand-built interiors: the **Central
 Library**, a **Lecture Theatre (LT-2)**, and the **Administration Building
 lobby**.
 
-![Main gate at Ichchhanath, modelled on the institute's own photographs](docs/screenshots/main-gate.jpg)
+![Old gate at Ichchhanath — red portal and name board, flag behind](docs/screenshots/old-gate.jpg)
+![New gate on the Dumas Road junction — red name wall and SVNIT letters](docs/screenshots/new-gate.jpg)
 ![The campus from above](docs/screenshots/campus-aerial-3.jpg)
 ![Staff quarters colony](docs/screenshots/staff-quarters.jpg)
 ![Hostels at night](docs/screenshots/hostels-night.jpg)
