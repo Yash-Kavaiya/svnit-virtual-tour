@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Text } from 'troika-three-text';
 import { gateFrame } from './gateFrame.js';
+import { pointInRing } from '../shared/polygon.mjs';
 
 export function createLandmarks(campus, registry) {
   const group = new THREE.Group();
@@ -13,6 +14,12 @@ export function createLandmarks(campus, registry) {
   if (statuePoi) group.add(makeStatue(statuePoi, campus.gates?.[0]));
 
   for (const gate of campus.gates ?? []) group.add(makeGate(gate, gateFrame(gate, campus.bounds)));
+
+  // free-standing ATMs only; one inside a building is that building's
+  const housed = (p) => campus.buildings.some((b) => pointInRing([p.x, p.z], b.footprint));
+  for (const atm of campus.pois.filter((p) => p.type === 'atm' && !housed(p))) {
+    group.add(makeAtmKiosk(atm, nearestRoadPoint(campus.roads, atm.x, atm.z)));
+  }
 
   // flagpole + fountain at the Central Library Lawn zone
   const lawn = campus.pois.find((p) => /library lawn|central library lawn/i.test(p.name));
@@ -286,5 +293,68 @@ function makeFountain(x, z) {
   const tier = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 1.4, 12), stone);
   tier.position.y = 0.9;
   g.add(ring, water, tier);
+  return g;
+}
+
+function nearestRoadPoint(roads, x, z) {
+  let best = null;
+  let bestD = Infinity;
+  for (const r of roads) {
+    for (let i = 0; i < r.path.length - 1; i++) {
+      const [ax, az] = r.path[i];
+      const [bx, bz] = r.path[i + 1];
+      const ex = bx - ax;
+      const ez = bz - az;
+      const t = Math.max(0, Math.min(1, ((x - ax) * ex + (z - az) * ez) / (ex * ex + ez * ez || 1)));
+      const px = ax + ex * t;
+      const pz = az + ez * t;
+      const d = Math.hypot(px - x, pz - z);
+      if (d < bestD) {
+        bestD = d;
+        best = [px, pz];
+      }
+    }
+  }
+  return best;
+}
+
+// Bank ATM cabin: rendered masonry box, glazed front, branded fascia.
+function makeAtmKiosk(poi, facing) {
+  const g = new THREE.Group();
+  g.position.set(poi.x, 0, poi.z);
+  if (facing) g.rotation.y = Math.atan2(facing[0] - poi.x, facing[1] - poi.z);
+
+  const wall = new THREE.MeshStandardMaterial({ color: '#e6e1d6', roughness: 0.9 });
+  const blue = new THREE.MeshStandardMaterial({ color: '#22409a', roughness: 0.5 });
+  const glass = new THREE.MeshStandardMaterial({ color: '#86a6b3', roughness: 0.15, metalness: 0.3, transparent: true, opacity: 0.55 });
+  const steel = new THREE.MeshStandardMaterial({ color: '#9aa1a8', roughness: 0.4, metalness: 0.6 });
+  const box = (sx, sy, sz, mat, x, y, z) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    g.add(m);
+    return m;
+  };
+  box(3.6, 0.2, 3.6, wall, 0, 0.1, 0); // plinth step
+  box(3.2, 2.8, 0.2, wall, 0, 1.6, -1.5); // back
+  for (const sx of [-1.5, 1.5]) box(0.2, 2.8, 3.2, wall, sx, 1.6, 0);
+  box(3.4, 0.25, 3.4, wall, 0, 3.12, 0); // roof slab
+  box(2.8, 2.3, 0.05, glass, 0, 1.35, 1.5); // glazed front / door
+  box(3.4, 0.6, 0.12, blue, 0, 2.7, 1.62); // fascia
+  box(0.8, 1.5, 0.6, steel, 0, 0.95, -1.1); // the machine
+  box(0.55, 0.35, 0.05, blue, 0, 1.45, -0.79); // its screen surround
+
+  const sign = new Text();
+  sign.text = 'SBI  ATM';
+  sign.fontSize = 0.34;
+  sign.color = '#ffffff';
+  sign.anchorX = 'center';
+  sign.anchorY = 'middle';
+  sign.position.set(0, 2.7, 1.69);
+  sign.sync();
+  g.add(sign);
+
+  g.userData.landmark = { name: poi.name + ' ATM', kind: 'atm' };
   return g;
 }

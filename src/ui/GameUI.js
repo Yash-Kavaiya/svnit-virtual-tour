@@ -162,6 +162,7 @@ export class GameUI {
     if (l.kind === 'memorial') {
       return 'Statue of Sardar Vallabhbhai Patel, the "Iron Man of India", after whom the institute is named.';
     }
+    if (l.kind === 'atm') return 'State Bank of India ATM inside the campus, near the main gate.';
     return '';
   }
 

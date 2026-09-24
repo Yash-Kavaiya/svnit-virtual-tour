@@ -168,6 +168,16 @@ export function buildCampus(overpassJson, opts = {}) {
     return { name: rule.name, category, floors, generic: true };
   };
 
+  // A named OSM node inside an unnamed footprint describes that building.
+  const POI_CATEGORY = { atm: 'amenity', bank: 'amenity', cafe: 'dining', restaurant: 'dining', hostel: 'hostel' };
+  const poiPoints = (parsed.pois ?? [])
+    .filter((p) => POI_CATEGORY[p.type] && Number.isFinite(p.lat))
+    .map((p) => ({ ...p, xz: proj.toXZ(p) }));
+  const poiInside = (ring) => {
+    const p = poiPoints.find((q) => pointInRing(q.xz, ring));
+    return p && { name: p.name, category: POI_CATEGORY[p.type] };
+  };
+
   const buildings = [];
   const pushBuilding = (id, name, ringXZ, tags, levelsHint, curatedMeta) => {
     const ring = sanitizeFootprint(ringXZ);
@@ -175,7 +185,7 @@ export function buildCampus(overpassJson, opts = {}) {
     if (!centroidInCampus(ring)) return;
 
     let cur = curatedMeta ?? curatedFor(id, name);
-    if (!name && !cur.name) cur = { ...unnamedRuleFor(ring, tags), ...cur };
+    if (!name && !cur.name) cur = { ...(poiInside(ring) ?? unnamedRuleFor(ring, tags)), ...cur };
     const category = cur.category ?? classifyBuilding({ tags: tags ?? {}, name });
     const lvHint = cur.floors ?? levelsHint ?? Number(tags?.['building:levels']);
     const { height, levels } = estimateHeight(category, lvHint);

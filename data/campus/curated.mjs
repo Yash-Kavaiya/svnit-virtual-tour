@@ -168,6 +168,12 @@ export default {
       floors: 5,
       description: 'Girls hostel for all departments, named after the Gujarati poet Narmad.',
     },
+    // unnamed footprint holding OSM's 'State Bank of India' ATM node
+    w361364027: {
+      floors: 2,
+      accent: '#22409a',
+      description: 'State Bank of India branch and ATM serving the campus, near the main gate.',
+    },
     w361364046: {
       name: 'SVNIT Canteen',
       category: 'dining',

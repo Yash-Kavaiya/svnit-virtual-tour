@@ -1307,8 +1307,8 @@
   },
   {
    "id": "w361364027",
-   "name": "Academic Block",
-   "category": "academic",
+   "name": "State Bank of India",
+   "category": "amenity",
    "footprint": [
     [
      73.83,
@@ -1347,16 +1347,16 @@
     98.89,
     -483.27
    ],
-   "height": 11.4,
-   "levels": 3,
+   "height": 8,
+   "levels": 2,
    "orientation": 2.6897,
    "meta": {
-    "floors": 3,
-    "facade": "academic",
-    "accent": "#b06a3a",
+    "floors": 2,
+    "description": "State Bank of India branch and ATM serving the campus, near the main gate.",
+    "facade": "utility",
+    "accent": "#22409a",
     "roof": "flat",
-    "hasInterior": false,
-    "generic": true
+    "hasInterior": false
    }
   },
   {

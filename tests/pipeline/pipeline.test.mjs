@@ -202,3 +202,30 @@ describe('buildCampus unnamedRules', () => {
 });
 
 const classifyOf = (campus, id) => campus.buildings.find((b) => b.id === id).category;
+
+describe('buildCampus names a footprint from the POI inside it', () => {
+  const raw = {
+    elements: [
+      ...FIXTURE.elements,
+      {
+        type: 'way',
+        id: 60,
+        tags: { building: 'yes' },
+        geometry: [
+          { lat: 21.1632, lon: 72.7856 },
+          { lat: 21.1632, lon: 72.7859 },
+          { lat: 21.1635, lon: 72.7859 },
+          { lat: 21.1635, lon: 72.7856 },
+        ],
+      },
+      { type: 'node', id: 61, tags: { amenity: 'atm', name: 'State Bank of India' }, lat: 21.16335, lon: 72.78575 },
+    ],
+  };
+  const campus = buildCampus(raw, { curated: EMPTY_CURATED });
+  it('takes the name and an amenity category', () => {
+    const b = campus.buildings.find((x) => x.id === 'w60');
+    expect(b.name).toBe('State Bank of India');
+    expect(b.category).toBe('amenity');
+    expect(b.meta.generic).toBeUndefined();
+  });
+});
