@@ -21,11 +21,10 @@ export function createLandmarks(campus, registry) {
     group.add(makeAtmKiosk(atm, nearestRoadPoint(campus.roads, atm.x, atm.z)));
   }
 
-  // flagpole + fountain at the Central Library Lawn zone
+  // flagpole at the Central Library Lawn zone
   const lawn = campus.pois.find((p) => /library lawn|central library lawn/i.test(p.name));
   if (lawn) {
     group.add(makeFlagpole(lawn.x + 8, lawn.z));
-    group.add(makeFountain(lawn.x - 10, lawn.z + 6));
   }
 
   group.traverse((o) => {
@@ -274,25 +273,6 @@ function makeFlagpole(x, z) {
   flag.position.set(1.3, 13, 0);
   g.add(base, pole, flag);
   g.userData.animatedFlag = flag;
-  return g;
-}
-
-function makeFountain(x, z) {
-  const g = new THREE.Group();
-  g.position.set(x, 0, z);
-  const stone = new THREE.MeshStandardMaterial({ color: '#9a9384', roughness: 1 });
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(4, 0.4, 8, 24), stone);
-  ring.rotation.x = Math.PI / 2;
-  ring.position.y = 0.4;
-  const water = new THREE.Mesh(
-    new THREE.CircleGeometry(3.8, 24),
-    new THREE.MeshStandardMaterial({ color: '#4c8ea0', roughness: 0.2, transparent: true, opacity: 0.8 }),
-  );
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = 0.35;
-  const tier = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 1.4, 12), stone);
-  tier.position.y = 0.9;
-  g.add(ring, water, tier);
   return g;
 }
 

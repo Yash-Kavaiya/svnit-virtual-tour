@@ -293,8 +293,8 @@ export default {
     { name: 'Volleyball Courts', sport: 'volleyball', footprintXZ: rect(-40, 150, 36, 20) },
   ],
 
-  // A small ornamental pond by the central lawn for visual interest.
-  extraWater: [{ name: 'Campus Lily Pond', footprintXZ: ellipse(-150, 40, 34, 22, 20) }],
+  // No invented water: OSM maps none inside the campus.
+  extraWater: [],
 
   // POIs OSM lacks inside the campus (local metres via `xz`).
   extraPois: [{ name: 'Open Air Theatre', type: 'poi', xz: [135, -10] }],
