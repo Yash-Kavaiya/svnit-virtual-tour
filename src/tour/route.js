@@ -5,8 +5,8 @@
 export const TOUR_STOPS = [
   {
     id: 'gate',
-    title: 'Main Gate',
-    target: { poi: 'Main Gate' },
+    title: 'Old Gate (Ichchhanath)',
+    target: { poi: 'Old Gate' },
     narration:
       'Welcome to the Sardar Vallabhbhai National Institute of Technology, Surat — SVNIT. Founded in 1961 as a Regional Engineering College and an NIT since 2002, the institute sits on a green 250-acre campus off Dumas Road, beside the Tapi river.',
     dwell: 6,
@@ -18,6 +18,15 @@ export const TOUR_STOPS = [
     target: { poi: 'Sardar Vallabhbhai Statue' },
     narration:
       'Just inside the gate stands a statue of Sardar Vallabhbhai Patel, the "Iron Man of India", after whom the institute is named. The tree-lined central avenue runs from here into the academic zone.',
+    dwell: 5,
+    height: 5,
+  },
+  {
+    id: 'new-gate',
+    title: 'New Gate (Dumas Road)',
+    target: { poi: 'New Gate' },
+    narration:
+      'The campus road runs west from the statue to the new gate on the Dumas Road junction — a long red wall carrying the institute name in Hindi and English beneath the big SVNIT letters, with the emblem on a red pillar beside it.',
     dwell: 5,
     height: 5,
   },
@@ -36,7 +45,7 @@ export const TOUR_STOPS = [
     title: 'Central Library',
     target: { building: /central library/i },
     narration:
-      'The Central Library, established in 1968, is one of the major technological libraries of western India and sits at the very centre of campus. Its reading halls and stacks are open to walk through.',
+      'The Central Library, established in 1968, sits at the centre of campus with over a lakh print books, eleven thousand e-books and access to more than 7,700 online journals. Its reading halls and stacks are open to walk through.',
     dwell: 5,
     height: 5,
     enterInterior: 'library',
@@ -108,8 +117,110 @@ export const TOUR_STOPS = [
   },
 ];
 
+const CATEGORY_LABEL = {
+  academic: 'an academic block',
+  admin: 'an administrative building',
+  library: 'the library',
+  hostel: 'a hostel',
+  workshop: 'a workshop',
+  lab: 'a laboratory',
+  sports: 'a sports facility',
+  dining: 'a dining hall',
+  health: 'the health centre',
+  utility: 'a service building',
+  residence: 'a residence',
+  amenity: 'a campus amenity',
+};
+
+const GROUP_NARRATION = {
+  'Staff Quarters':
+    'Faculty and staff live on campus too — the staff quarters are rows of two- and three-storey residential blocks set among trees.',
+  'Academic Block': 'Several more academic blocks fill out the academic zone around the departments.',
+  'Hostel Block': 'Beside the named Bhavans stand further hostel blocks, built around their own courtyards.',
+  'Service Building':
+    'Smaller service buildings — stores, plant rooms and pump houses — keep the campus running.',
+};
+
+function narrationFor(b) {
+  if (b.meta?.description) return `${b.name}. ${b.meta.description}`;
+  const parts = [`${b.name} is ${CATEGORY_LABEL[b.category] ?? 'a campus building'}`];
+  if (b.meta?.department) parts.push(`home to ${b.meta.department}`);
+  let text = parts.join(', ');
+  if (b.meta?.established) text += `, dating from ${b.meta.established}`;
+  return `${text} — ${b.levels} storey${b.levels === 1 ? '' : 's'} tall.`;
+}
+
+// Order stops so each hop goes to the nearest unvisited building.
+function nearestOrder(items, start) {
+  const left = [...items];
+  const out = [];
+  let [x, z] = start;
+  while (left.length) {
+    let bi = 0;
+    let bd = Infinity;
+    left.forEach((b, i) => {
+      const d = Math.hypot(b.centroid[0] - x, b.centroid[1] - z);
+      if (d < bd) {
+        bd = d;
+        bi = i;
+      }
+    });
+    const [b] = left.splice(bi, 1);
+    out.push(b);
+    [x, z] = b.centroid;
+  }
+  return out;
+}
+
+// The full route: the curated narrated stops, then every other named
+// building (and one example of each generic type) in walking order, then
+// the closing aerial view.
+export function buildTourStops(campus) {
+  const curated = TOUR_STOPS.map((stop) => {
+    if (!stop.target.building) return stop;
+    const b = campus.buildings.find((q) => stop.target.building.test(q.name));
+    return b ? { ...stop, coversId: b.id } : stop;
+  });
+  const covered = new Set(curated.map((s) => s.coversId).filter(Boolean));
+  const named = campus.buildings.filter(
+    (b) => !b.meta?.generic && !b.name.startsWith('(unnamed') && !covered.has(b.id),
+  );
+  const groups = new Map();
+  for (const b of campus.buildings.filter((q) => q.meta?.generic)) {
+    if (!groups.has(b.name)) groups.set(b.name, []);
+    groups.get(b.name).push(b);
+  }
+  const examples = [...groups.values()].map((list) => {
+    const cx = list.reduce((s, b) => s + b.centroid[0], 0) / list.length;
+    const cz = list.reduce((s, b) => s + b.centroid[1], 0) / list.length;
+    return list.reduce((a, b) =>
+      Math.hypot(b.centroid[0] - cx, b.centroid[1] - cz) < Math.hypot(a.centroid[0] - cx, a.centroid[1] - cz) ? b : a,
+    );
+  });
+
+  const finale = curated.at(-1);
+  const body = curated.slice(0, -1);
+  const lastTarget = findTarget(body.at(-1).target, campus, null) ?? { x: 0, z: 0 };
+  const extra = nearestOrder([...named, ...examples], [lastTarget.x, lastTarget.z]).map((b) => ({
+    id: `b-${b.id}`,
+    title: b.name,
+    target: { id: b.id },
+    narration: b.meta?.generic ? (GROUP_NARRATION[b.name] ?? narrationFor(b)) : narrationFor(b),
+    dwell: 3.5,
+    height: Math.max(5, Math.min(14, b.height * 0.6)),
+  }));
+  return [...body, ...extra, finale];
+}
+
 function findTarget(t, campus, buildingsApi) {
   if (t.x !== undefined) return { x: t.x, z: t.z };
+  if (t.id) {
+    const b = campus.buildings.find((q) => q.id === t.id);
+    if (b) {
+      const door = buildingsApi?.byId.get(b.id)?.doorWorldPos;
+      return door ? { x: door.x, z: door.z, centroid: b.centroid } : { x: b.centroid[0], z: b.centroid[1] };
+    }
+  }
   if (t.poi) {
     const p = campus.pois.find((q) => q.name.toLowerCase().includes(t.poi.toLowerCase()));
     if (p) return { x: p.x, z: p.z };
@@ -133,7 +244,7 @@ export function resolveTour(campus, buildingsApi) {
   const resolved = [];
   let prev = { pos: [centre[0], 40, campus.bounds.maxZ], look: [centre[0], 0, centre[1]] };
 
-  for (const stop of TOUR_STOPS) {
+  for (const stop of buildTourStops(campus)) {
     const tgt = findTarget(stop.target, campus, buildingsApi) ?? { x: centre[0], z: centre[1] };
     const towards = tgt.centroid ? { x: tgt.centroid[0], z: tgt.centroid[1] } : { x: centre[0], z: centre[1] };
     // framing position: stand back from the target toward the campus centre
