@@ -257,16 +257,18 @@ export default {
   // No invented water: OSM maps none inside the campus.
   extraWater: [],
 
-  // POIs OSM lacks inside the campus (local metres via `xz`).
-  extraPois: [{ name: 'Open Air Theatre', type: 'poi', xz: [135, -10] }],
+  // No hand-added POIs: an 'Open Air Theatre' marker was unverified.
+  extraPois: [],
 
   gates: [{ name: 'Main Gate (Ichchhanath)', lat: 21.16737, lon: 72.78508, rot: 0, width: 16 }],
 
   zones: [
     { name: 'Academic Zone', lat: 21.1634, lon: 72.7852 },
     { name: 'Central Library Lawn', lat: 21.1639, lon: 72.7858 },
-    { name: 'Hostel Zone', lat: 21.1606, lon: 72.7866 },
-    { name: 'Sports Complex', lat: 21.1655, lon: 72.7844 },
+    // centre of Tagore / Bhabha / Nehru / Swami Vivekanand Bhavan (local metres)
+    { name: 'Hostel Zone', xz: [430, 150] },
+    // centroid of OSM's 12 ha 'Student activity ground'
+    { name: 'Sports Complex', xz: [115, 189] },
     { name: 'Main Gate', lat: 21.16737, lon: 72.78508 },
   ],
 };

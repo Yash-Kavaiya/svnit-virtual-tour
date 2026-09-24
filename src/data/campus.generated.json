@@ -11735,15 +11735,15 @@
   {
    "name": "Hostel Zone",
    "type": "zone",
-   "x": 155.16,
-   "z": 240.14,
+   "x": 430,
+   "z": 150,
    "rot": 0
   },
   {
    "name": "Sports Complex",
    "type": "zone",
-   "x": -73.23,
-   "z": -305.33,
+   "x": 115,
+   "z": 189,
    "rot": 0
   },
   {
@@ -11751,13 +11751,6 @@
    "type": "zone",
    "x": -2.63,
    "z": -513.49,
-   "rot": 0
-  },
-  {
-   "name": "Open Air Theatre",
-   "type": "poi",
-   "x": 135,
-   "z": -10,
    "rot": 0
   }
  ],

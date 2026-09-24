@@ -408,7 +408,7 @@ export function buildCampus(overpassJson, opts = {}) {
     .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
   for (const z of curated.zones ?? []) {
-    const [x, zz] = proj.toXZ(z);
+    const [x, zz] = z.xz ?? proj.toXZ(z);
     pois.push({ name: z.name, type: 'zone', x: round(x), z: round(zz), rot: 0 });
   }
   for (const p of curated.extraPois ?? []) {
