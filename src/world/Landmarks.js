@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { Text } from 'troika-three-text';
 import { gateFrame } from './gateFrame.js';
 import { pointInRing } from '../shared/polygon.mjs';
+import { Settings } from '../core/Settings.js';
+import { events } from '../core/events.js';
 
 export function createLandmarks(campus, registry) {
   const group = new THREE.Group();
@@ -11,7 +13,23 @@ export function createLandmarks(campus, registry) {
   const statuePoi =
     campus.pois.find((p) => p.type === 'statue') ||
     campus.pois.find((p) => /statue|patel|sardar/i.test(p.name));
-  if (statuePoi) group.add(makeStatue(statuePoi, campus.gates?.[0]));
+  let floodlight = null;
+  if (statuePoi) {
+    const statue = makeStatue(statuePoi, campus.gates?.[0]);
+    group.add(statue);
+    // uplight the statue from the island edge on the gate side after dark
+    floodlight = new THREE.SpotLight('#ffe2b0', 0, 22, 0.42, 0.5, 1.2);
+    floodlight.position.set(0, 0.5, 6.4);
+    floodlight.target.position.set(0, 8, 0);
+    statue.add(floodlight, floodlight.target);
+  }
+  const applyNight = () => {
+    const t = Settings.get('timeOfDay');
+    if (floodlight) floodlight.intensity = t === 'night' ? 80 : t === 'dusk' ? 30 : 0;
+  };
+  applyNight();
+  const onSettings = ({ key }) => key === 'timeOfDay' && applyNight();
+  events.on('settings:change', onSettings);
 
   for (const gate of campus.gates ?? []) group.add(makeGate(gate, gateFrame(gate, campus.bounds)));
 
@@ -37,6 +55,7 @@ export function createLandmarks(campus, registry) {
     group,
     pickables,
     dispose() {
+      events.off('settings:change', onSettings);
       group.traverse((o) => {
         if (o.isMesh && o.geometry) o.geometry.dispose();
       });

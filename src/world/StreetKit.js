@@ -30,7 +30,31 @@ export function createStreetKit(campus, registry, buildingsApi) {
       }
     }
   }
-  const lampMeshes = instanceGroup(lampProto, lampPts.filter(([x, z]) => !onPavement(campus, x, z)), dummy);
+  const lampSpots = lampPts.filter(([x, z]) => !onPavement(campus, x, z));
+  const lampMeshes = instanceGroup(lampProto, lampSpots, dummy);
+
+  // warm pools of light under each lamp head (additive decals, no real lights)
+  const poolMat = new THREE.MeshBasicMaterial({
+    map: radialFalloffTexture(),
+    color: '#ffc27a',
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const poolGeo = new THREE.PlaneGeometry(16, 16).rotateX(-Math.PI / 2);
+  const pools = new THREE.InstancedMesh(poolGeo, poolMat, Math.max(1, lampSpots.length));
+  lampSpots.forEach(([x, z, rot], i) => {
+    // the lamp head hangs ~1 m out along the arm (local +x)
+    dummy.position.set(x + Math.cos(rot) * 1.4, 0.1, z - Math.sin(rot) * 1.4);
+    dummy.rotation.set(0, 0, 0);
+    dummy.updateMatrix();
+    pools.setMatrixAt(i, dummy.matrix);
+  });
+  pools.count = lampSpots.length;
+  pools.renderOrder = 2;
+  pools.name = 'lamp-pools';
+  group.add(pools);
   const bulbs = [];
   lampMeshes.forEach((m) => {
     group.add(m);
@@ -126,6 +150,8 @@ export function createStreetKit(campus, registry, buildingsApi) {
     const name = Settings.get('timeOfDay');
     const on = name === 'dusk' || name === 'night' ? 1 : 0;
     for (const b of bulbs) b.material.emissiveIntensity = on * (name === 'night' ? 2.2 : 1.1);
+    poolMat.opacity = on * (name === 'night' ? 0.9 : 0.35);
+    pools.visible = on > 0;
   };
   applyGlow();
   const onSettings = ({ key }) => key === 'timeOfDay' && applyGlow();
@@ -200,4 +226,24 @@ export function onPavement(campus, x, z) {
     if (p.type === 'statue' && Math.hypot(x - p.x, z - p.z) < 8) return true;
   }
   return false;
+}
+
+// 64x64 radial falloff (bright centre -> transparent edge), built without a
+// canvas so it also works under test.
+function radialFalloffTexture(size = 64) {
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const d = Math.hypot(x - size / 2 + 0.5, y - size / 2 + 0.5) / (size / 2);
+      const a = Math.max(0, 1 - d) ** 2;
+      const i = (y * size + x) * 4;
+      data[i] = data[i + 1] = data[i + 2] = Math.round(255 * a);
+      data[i + 3] = 255;
+    }
+  }
+  const tex = new THREE.DataTexture(data, size, size);
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  return tex;
 }
