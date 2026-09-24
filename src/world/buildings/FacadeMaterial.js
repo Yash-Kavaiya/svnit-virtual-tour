@@ -188,8 +188,10 @@ function drawFacade(ctx, p, seed) {
   ctx.fillStyle = mix(p.wall, '#000000', 0.12);
   ctx.fillRect(0, sillY + winH, TILE, 8);
 
+  const panes = [];
   for (let x = gap * 0.4; x + winW < TILE + stride; x += stride) {
     drawPane(ctx, x, sillY, winW, winH, p, rnd);
+    panes.push([x, sillY, winW, winH]);
   }
 
   // strong chhajja relief at the TOP of the tile (the floor line):
@@ -227,6 +229,40 @@ function drawFacade(ctx, p, seed) {
       ctx.stroke();
     }
   }
+  return panes;
+}
+
+// Share of windows lit after dark, by building family.
+const LIT_SHARE = { hostel: 0.62, residence: 0.55, library: 0.5, academic: 0.3, admin: 0.22, dining: 0.5 };
+const LIT_GRID = 8; // one lit map spans 8 facade bays x 8 floors
+const LIT_CELL = 32;
+const LIT_SIZE = LIT_GRID * LIT_CELL;
+
+// Low-res emissive atlas: each of the 8x8 cells is one facade tile (4 m x 1
+// floor) with its own random set of warm-lit panes, so the lit pattern
+// doesn't repeat bay after bay.
+function drawLitWindows(ctx, panes, share, seed) {
+  const rnd = mulberry32(seed ^ 0x5bd1e995);
+  const k = LIT_CELL / TILE;
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, LIT_SIZE, LIT_SIZE);
+  for (let gy = 0; gy < LIT_GRID; gy++) {
+    for (let gx = 0; gx < LIT_GRID; gx++) {
+      for (const [x, y, w, h] of panes) {
+        if (rnd() > share) continue;
+        ctx.fillStyle = rnd() < 0.8 ? '#ffcf8a' : '#dfe9ff'; // tube-light white now and then
+        ctx.fillRect(gx * LIT_CELL + x * k, gy * LIT_CELL + y * k, w * k, h * k);
+      }
+    }
+  }
+}
+
+const NIGHT_EMISSIVE = { dawn: 0, noon: 0, dusk: 0.45, night: 1.1 };
+
+// Turn window glow up/down for a time-of-day preset on every facade.
+export function setFacadeNight(timeOfDay) {
+  const v = NIGHT_EMISSIVE[timeOfDay] ?? 0;
+  for (const m of cache.values()) if (m.emissiveMap) m.emissiveIntensity = v;
 }
 
 export function facadeMaterial({ category = 'utility', accent, seed = 1, levels = 3 } = {}) {
@@ -244,7 +280,7 @@ export function facadeMaterial({ category = 'utility', accent, seed = 1, levels 
   }
 
   const { canvas, ctx } = makeCanvas(TILE);
-  drawFacade(ctx, p, seed + hashString(family));
+  const panes = drawFacade(ctx, p, seed + hashString(family));
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
@@ -256,6 +292,19 @@ export function facadeMaterial({ category = 'utility', accent, seed = 1, levels 
     roughness: family === 'workshop' ? 0.55 : 0.82,
     metalness: 0.04,
   });
+  const share = LIT_SHARE[family];
+  if (share) {
+    const lit = makeCanvas(LIT_SIZE);
+    drawLitWindows(lit.ctx, panes, share, seed);
+    const litTex = new THREE.CanvasTexture(lit.canvas);
+    litTex.wrapS = THREE.RepeatWrapping;
+    litTex.wrapT = THREE.RepeatWrapping;
+    litTex.repeat.set(1 / LIT_GRID, 1 / LIT_GRID);
+    litTex.colorSpace = THREE.SRGBColorSpace;
+    mat.emissive = new THREE.Color('#ffffff');
+    mat.emissiveMap = litTex;
+    mat.emissiveIntensity = 0;
+  }
   mat.userData.plinthColor = p.plinth;
   mat.userData.wallColor = p.wall;
   cache.set(key, mat);
@@ -265,6 +314,7 @@ export function facadeMaterial({ category = 'utility', accent, seed = 1, levels 
 export function disposeFacadeCache() {
   for (const m of cache.values()) {
     m.map?.dispose?.();
+    m.emissiveMap?.dispose?.();
     m.dispose?.();
   }
   cache.clear();

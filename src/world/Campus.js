@@ -16,6 +16,7 @@ import { PlayerController } from '../player/PlayerController.js';
 import { Collider } from '../player/Collision.js';
 import { TIME_PRESETS } from './TimeOfDay.js';
 import { gateFrame } from './gateFrame.js';
+import { setFacadeNight } from './buildings/FacadeMaterial.js';
 
 const D2R = Math.PI / 180;
 
@@ -87,6 +88,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     const p = TIME_PRESETS[name] ?? TIME_PRESETS.noon;
     sky.setPreset(name);
     lighting.setPreset(name);
+    setFacadeNight(name);
     scene.fog.color.set(p.fogColor);
     scene.fog.density = p.fogDensity;
     scene.background = new THREE.Color(p.skyHorizon);
