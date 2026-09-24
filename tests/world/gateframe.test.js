@@ -37,3 +37,20 @@ describe('wallRuns', () => {
     expect(second[0][0]).toBeCloseTo(60, 6);
   });
 });
+
+describe('onPavement', () => {
+  it('flags road surface, the gate approach and the statue island', async () => {
+    const { onPavement } = await import('../../src/world/StreetKit.js');
+    const campus = {
+      bounds,
+      roads: [{ width: 6, path: [[-50, 0], [50, 0]] }],
+      gates: [{ x: 0, z: -100, width: 16, wallAngle: 0 }],
+      pois: [{ type: 'statue', x: 40, z: 40 }],
+    };
+    expect(onPavement(campus, 10, 2)).toBe(true); // on the road
+    expect(onPavement(campus, 10, 5)).toBe(false); // verge
+    expect(onPavement(campus, 3, -95)).toBe(true); // gate carriageway
+    expect(onPavement(campus, 42, 41)).toBe(true); // statue island
+    expect(onPavement(campus, 60, 60)).toBe(false);
+  });
+});

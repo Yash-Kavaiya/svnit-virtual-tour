@@ -30,7 +30,7 @@ export function createStreetKit(campus, registry, buildingsApi) {
       }
     }
   }
-  const lampMeshes = instanceGroup(lampProto, lampPts, dummy);
+  const lampMeshes = instanceGroup(lampProto, lampPts.filter(([x, z]) => !onPavement(campus, x, z)), dummy);
   const bulbs = [];
   lampMeshes.forEach((m) => {
     group.add(m);
@@ -173,4 +173,31 @@ function instanceGroup(proto, points, dummy) {
     meshes.push(inst);
   }
   return meshes;
+}
+
+const segDist = (x, z, a, b) => {
+  const ex = b[0] - a[0];
+  const ez = b[1] - a[1];
+  const t = Math.max(0, Math.min(1, ((x - a[0]) * ex + (z - a[1]) * ez) / (ex * ex + ez * ez || 1)));
+  return Math.hypot(x - a[0] - ex * t, z - a[1] - ez * t);
+};
+
+// True when (x, z) is on a carriageway, the gate approach, or the statue
+// roundabout island — somewhere a lamp post must not stand.
+export function onPavement(campus, x, z) {
+  for (const r of campus.roads) {
+    for (let i = 0; i < r.path.length - 1; i++) {
+      if (segDist(x, z, r.path[i], r.path[i + 1]) < r.width / 2 + 0.4) return true;
+    }
+  }
+  for (const g of campus.gates ?? []) {
+    const { inx, inz, halfOpening } = gateFrame(g, campus.bounds);
+    const along = (x - g.x) * inx + (z - g.z) * inz;
+    const across = Math.abs((x - g.x) * inz - (z - g.z) * inx);
+    if (along > -16 && along < 16 && across < halfOpening + 2) return true;
+  }
+  for (const p of campus.pois) {
+    if (p.type === 'statue' && Math.hypot(x - p.x, z - p.z) < 8) return true;
+  }
+  return false;
 }

@@ -65,7 +65,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
 
   const player = new PlayerController({ camera, collider, domElement });
 
-  // Spawn just inside the Main Gate, facing into campus.
+  // Spawn on the carriageway just inside the Main Gate, facing the statue.
   const gate = campus.gates?.[0];
   const centre = [
     (campus.bounds.minX + campus.bounds.maxX) / 2,
@@ -75,7 +75,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     const { inx: dirx, inz: dirz } = gateFrame(gate, campus.bounds);
     // camera forward at yaw is (-sin yaw, -cos yaw); face the campus centre
     player.teleport(
-      new THREE.Vector3(gate.x + dirx * 28, 1.7, gate.z + dirz * 28),
+      new THREE.Vector3(gate.x + dirx * 9, 1.7, gate.z + dirz * 9),
       Math.atan2(-dirx, -dirz),
     );
   } else {
