@@ -5,8 +5,8 @@ Vallabhbhai National Institute of Technology, Surat** (SVNIT) — Ichchhanath,
 Surat, Gujarat.
 
 You walk or free-fly through a navigable 3D model of the campus whose
-**layout, road network, water bodies and building footprints come from real
-OpenStreetMap data**, with procedurally generated Indian-institutional
+**layout, road network, building footprints, main entrance and points of
+interest come from real OpenStreetMap data**, with procedurally generated Indian-institutional
 building architecture, real building name-boards, landscaping, landmarks
 (the Sardar Patel statue and the main gate), ambient life and sound,
 a guided-tour mode, a minimap, and clickable building information.
