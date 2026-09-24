@@ -123,6 +123,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     api,
     update(dt) {
       player.update(dt);
+      sky.update(dt);
       lighting.updateShadowTarget(camera.position);
       water.update(dt);
       buildings.update(camera.position);
