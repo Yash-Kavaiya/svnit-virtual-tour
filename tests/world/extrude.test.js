@@ -32,6 +32,21 @@ describe('extrudeFootprint', () => {
     const covered = g.groups.reduce((s, gr) => s + gr.count, 0);
     expect(covered).toBe(total); // every vertex belongs to exactly one group
   });
+
+  it('winds every roof-cap triangle to face up, whatever the input winding', () => {
+    for (const ring of [RECT, [...RECT].reverse()]) {
+      const g = extrudeFootprint(ring, 10);
+      const cap = g.groups.find((gr) => gr.materialIndex === 1);
+      const p = g.getAttribute('position');
+      for (let i = cap.start; i < cap.start + cap.count; i += 3) {
+        const ux = p.getX(i + 1) - p.getX(i);
+        const uz = p.getZ(i + 1) - p.getZ(i);
+        const vx = p.getX(i + 2) - p.getX(i);
+        const vz = p.getZ(i + 2) - p.getZ(i);
+        expect(uz * vx - ux * vz).toBeGreaterThan(0); // y of (b-a)x(c-a)
+      }
+    }
+  });
 });
 
 describe('footprintBounds', () => {

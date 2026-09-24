@@ -63,7 +63,13 @@ export function extrudeFootprint(ring, height, opts = {}) {
   }
   if (tris.length) {
     for (const [i0, i1, i2] of tris) {
-      for (const idx of [i0, i1, i2]) {
+      // earcut winds in the x/y plane; mapped onto x/z that can face down and
+      // get back-face culled (roofs vanished from above). Force +Y facing.
+      const a = contour[i0];
+      const b = contour[i1];
+      const c = contour[i2];
+      const up = (b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - a.y) > 0;
+      for (const idx of up ? [i0, i1, i2] : [i0, i2, i1]) {
         const v = contour[idx];
         positions.push(v.x, height, v.y);
         normals.push(0, 1, 0);
