@@ -21,8 +21,9 @@ derived from any proprietary source:
   water tanks, entrance canopies, name-boards)
 - All three interiors (Central Library, Lecture Theatre, Administration
   lobby) — plausible institutional layouts, not measured reconstructions
-- Landmarks — the Sardar Vallabhbhai Patel statue, the main gate, flagpole
-  and fountain
+- Landmarks — the Sardar Vallabhbhai Patel statue and its roundabout, the
+  main gate (placed at OSM's `entrance=main` at Ichchhanath), the SBI ATM
+  signage and the flagpole
 - Landscaping, street furniture, ambient students and bicycles
 - All audio — synthesized at runtime with the Web Audio API
 - Guided-tour route and narration text
