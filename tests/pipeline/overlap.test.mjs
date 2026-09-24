@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import campus from '../../src/data/campus.generated.json' with { type: 'json' };
+import { readFileSync } from 'node:fs';
 import { pointInRing } from '../../src/shared/polygon.mjs';
+
+const campus = JSON.parse(readFileSync(new URL('../../src/data/campus.generated.json', import.meta.url)));
 
 // Grid-sampled overlap area (m²) of footprint b inside footprint a.
 function overlapArea(a, b, step = 1.5) {
