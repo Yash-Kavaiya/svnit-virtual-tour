@@ -64,7 +64,7 @@ npm run data       # data/osm/*.json + data/campus/curated.mjs  ->  src/data/cam
 - `data/osm/overpass-raw.json` — a committed OpenStreetMap (Overpass API)
   export of the campus area.
 - `data/campus/curated.mjs` — a hand overlay that adds department names,
-  the auditorium, hostels OSM lacks, the main gate, sports grounds and
+  the main gate, approximate sports grounds and
   fixes. See [`data/campus/README.md`](data/campus/README.md) to correct
   any building.
 

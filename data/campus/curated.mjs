@@ -204,23 +204,8 @@ export default {
   },
 
   extraBuildings: [
-    {
-      id: 'x-auditorium',
-      name: 'Gajjar Auditorium',
-      category: 'admin',
-      levels: 2,
-      footprintLatLon: [
-        { lat: 21.1627, lon: 72.7841 },
-        { lat: 21.1627, lon: 72.7848 },
-        { lat: 21.163, lon: 72.7848 },
-        { lat: 21.163, lon: 72.7841 },
-      ],
-      meta: {
-        description: 'The main auditorium / convocation hall for institute functions and cultural events.',
-        accent: '#8a5a3b',
-        roof: 'vault',
-      },
-    },
+    // (no 'Gajjar Auditorium': SVNIT holds convocations off campus at the
+    // VNSGU Convention Hall, and no source shows an on-campus auditorium)
     {
       id: 'x-sac',
       name: 'Students Activity Centre',

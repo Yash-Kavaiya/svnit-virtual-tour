@@ -9908,44 +9908,6 @@
     "hasInterior": false,
     "generic": true
    }
-  },
-  {
-   "id": "x-auditorium",
-   "name": "Gajjar Auditorium",
-   "category": "admin",
-   "footprint": [
-    [
-     -104.37,
-     -27.03
-    ],
-    [
-     -31.7,
-     -27.03
-    ],
-    [
-     -31.7,
-     6.37
-    ],
-    [
-     -104.37,
-     6.37
-    ]
-   ],
-   "centroid": [
-    -68.03,
-    -10.33
-   ],
-   "height": 8,
-   "levels": 2,
-   "orientation": 0,
-   "meta": {
-    "floors": 2,
-    "description": "The main auditorium / convocation hall for institute functions and cultural events.",
-    "facade": "admin",
-    "accent": "#8a5a3b",
-    "roof": "vault",
-    "hasInterior": false
-   }
   }
  ],
  "roads": [
