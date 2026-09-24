@@ -6,8 +6,6 @@
 // Coordinates for extraBuildings / gates are approximate, picked from satellite
 // imagery — good enough for v1 per the design spec; refine in the accuracy pass.
 
-import { ellipse, rect } from './shapes.mjs';
-
 export default {
   buildings: {
     'central library': {

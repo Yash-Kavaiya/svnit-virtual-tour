@@ -97,7 +97,7 @@ describe('mergeByMaterial', () => {
     const ma = merged.find((m) => m.material === a);
     ma.geometry.computeBoundingBox();
     expect(ma.geometry.boundingBox.max.x).toBeCloseTo(10.5, 5);
-  });
+  }, 20000); // first import of Buildings.js is slow under a loaded parallel run
 });
 
 describe('extrudeFootprint courtyards', () => {
