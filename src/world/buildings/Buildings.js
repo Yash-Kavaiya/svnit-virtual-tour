@@ -7,6 +7,10 @@ import { attachEntrance, nearestRoadPointTo } from './Entrance.js';
 import { lodLevel } from './lod.js';
 import { hashString } from '../../core/rng.js';
 import { Settings } from '../../core/Settings.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+
+// weathered RCC, lighter/darker slabs and heat-reflective white paint
+const ROOF_TINTS = ['#b0a996', '#c2bcae', '#9f9a8c', '#d9d7d0', '#a9a191'];
 
 const ACCENT_MAT_CACHE = new Map();
 const CONCRETE_MAT_CACHE = new Map();
@@ -21,6 +25,7 @@ export function createBuildings(campus, registry) {
   const pickables = [];
   const byId = new Map();
   const roads = campus.roads;
+  const roofScratch = new THREE.Group();
 
   for (const b of campus.buildings) {
     const seed = hashString(b.id);
@@ -48,8 +53,9 @@ export function createBuildings(campus, registry) {
     );
     // roof cap gets its own weathered-concrete slab material — the facade
     // texture smeared across a roof read as a muddy void from above.
-    const roofSlabMat = registry.mat('roof-slab', () =>
-      new THREE.MeshStandardMaterial({ color: '#b0a996', roughness: 0.97 }),
+    const roofTint = ROOF_TINTS[seed % ROOF_TINTS.length];
+    const roofSlabMat = registry.mat(`roof-slab-${roofTint}`, () =>
+      new THREE.MeshStandardMaterial({ color: roofTint, roughness: 0.97 }),
     );
 
     // ---- FULL: shell + 3D detail + plinth + roof clutter + entrance
@@ -76,13 +82,6 @@ export function createBuildings(campus, registry) {
       full.add(plinth);
     }
 
-    populateRoof(full, {
-      footprint: b.footprint,
-      height: b.height,
-      category: b.category,
-      seed,
-      registry,
-    });
 
     // paved apron around the base so buildings don't float on grass
     const apronGeo = buildApron(b.footprint, 2.4);
@@ -129,6 +128,15 @@ export function createBuildings(campus, registry) {
     pick.userData.buildingId = b.id;
 
     bgroup.add(full, mid, pick);
+    // rooftop tanks / stair towers / solar read from the air, so they show
+    // at every distance; collected here and merged campus-wide below
+    populateRoof(roofScratch, {
+      footprint: b.footprint,
+      height: b.height,
+      category: b.category,
+      seed,
+      registry,
+    });
     full.visible = false;
     mid.visible = true;
 
@@ -136,6 +144,8 @@ export function createBuildings(campus, registry) {
     pickables.push(pick);
     byId.set(b.id, { group: bgroup, record: b, doorWorldPos });
   }
+
+  group.add(...mergeByMaterial(roofScratch, 'roof-clutter'));
 
   let frame = 0;
   const tmp = new THREE.Vector3();
@@ -168,4 +178,30 @@ export function createBuildings(campus, registry) {
       CONCRETE_MAT_CACHE.clear();
     },
   };
+}
+
+// Bake every mesh under `root` into one mesh per material (world-space,
+// non-indexed) — hundreds of small roof props become a handful of draws.
+export function mergeByMaterial(root, name) {
+  root.updateMatrixWorld(true);
+  const byMat = new Map();
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const g = o.geometry.clone().applyMatrix4(o.matrixWorld);
+    const flat = g.index ? g.toNonIndexed() : g;
+    for (const key of Object.keys(flat.attributes)) {
+      if (!['position', 'normal', 'uv'].includes(key)) flat.deleteAttribute(key);
+    }
+    if (!byMat.has(o.material)) byMat.set(o.material, []);
+    byMat.get(o.material).push(flat);
+  });
+  const out = [];
+  for (const [mat, geos] of byMat) {
+    const mesh = new THREE.Mesh(BufferGeometryUtils.mergeGeometries(geos, false), mat);
+    mesh.name = name;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    out.push(mesh);
+  }
+  return out;
 }

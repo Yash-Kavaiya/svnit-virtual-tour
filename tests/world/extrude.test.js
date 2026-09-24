@@ -79,3 +79,23 @@ describe('footprintBounds', () => {
     expect(b.cz).toBeCloseTo(5, 3);
   });
 });
+
+describe('mergeByMaterial', () => {
+  it('bakes meshes into one world-space mesh per material', async () => {
+    const THREE = await import('three');
+    const { mergeByMaterial } = await import('../../src/world/buildings/Buildings.js');
+    const root = new THREE.Group();
+    const a = new THREE.MeshBasicMaterial();
+    const b = new THREE.MeshBasicMaterial();
+    for (const [mat, x] of [[a, 0], [a, 10], [b, 20]]) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
+      m.position.x = x;
+      root.add(m);
+    }
+    const merged = mergeByMaterial(root, 'test');
+    expect(merged).toHaveLength(2);
+    const ma = merged.find((m) => m.material === a);
+    ma.geometry.computeBoundingBox();
+    expect(ma.geometry.boundingBox.max.x).toBeCloseTo(10.5, 5);
+  });
+});

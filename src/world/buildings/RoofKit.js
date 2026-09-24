@@ -14,7 +14,8 @@ export function populateRoof(group, { footprint, height, category, seed = 1, reg
   const place = (lx, lz) => [cx + lx * c - lz * s, cz + lx * s + lz * c];
 
   const mats = {
-    tank: registry.mat('roof-tank', () => new THREE.MeshStandardMaterial({ color: '#3f5f8a', roughness: 0.7 })),
+    // black rotomoulded (Sintex-style) tanks, as on most Indian rooftops
+    tank: registry.mat('roof-tank', () => new THREE.MeshStandardMaterial({ color: '#1e1f22', roughness: 0.6 })),
     metal: registry.mat('roof-metal', () => new THREE.MeshStandardMaterial({ color: '#b9bdc2', roughness: 0.5, metalness: 0.3 })),
     box: registry.mat('roof-box', () => new THREE.MeshStandardMaterial({ color: '#cfc7b6', roughness: 0.9 })),
     solar: registry.mat('roof-solar', () => new THREE.MeshStandardMaterial({ color: '#1b2b45', roughness: 0.3, metalness: 0.4 })),
@@ -24,12 +25,12 @@ export function populateRoof(group, { footprint, height, category, seed = 1, reg
 
   // water tanks on shared instanced meshes-worth of geometry (few, so plain)
   const tanks = category === 'hostel' ? 2 + Math.floor(rnd() * 2) : rnd() < 0.6 ? 1 : 0;
-  const tankGeo = registry.geo('roof-tank', () => new THREE.CylinderGeometry(0.9, 0.9, 1.7, 8));
+  const tankGeo = registry.geo('roof-tank', () => new THREE.CylinderGeometry(0.72, 0.8, 1.5, 12));
   const standGeo = registry.geo('roof-stand', () => new THREE.BoxGeometry(1.8, 1.0, 1.8));
   for (let i = 0; i < tanks; i++) {
     const [px, pz] = place((rnd() - 0.5) * w * 0.6, (rnd() - 0.5) * d * 0.6);
     const tank = new THREE.Mesh(tankGeo, mats.tank);
-    tank.position.set(px, height + 1.35, pz);
+    tank.position.set(px, height + 1.75, pz);
     const stand = new THREE.Mesh(standGeo, mats.metal);
     stand.position.set(px, height + 0.5, pz);
     tank.castShadow = true;

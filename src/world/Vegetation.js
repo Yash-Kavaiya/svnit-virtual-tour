@@ -46,7 +46,8 @@ export function scatterPoints({ bounds, count, seed = 1, reject, minSpacing = 6 
   return out;
 }
 
-const DENSITY = { low: 0, medium: 0.5, high: 1, ultra: 1.6 };
+// trees are instanced (a few draw calls), so even 'low' keeps a green campus
+const DENSITY = { low: 0.3, medium: 0.5, high: 1, ultra: 1.6 };
 
 // Per-tree canopy tint, returned as an [r, g, b] MULTIPLIER centred on 1.0.
 // It is written into `InstancedMesh.instanceColor`, which the shader multiplies

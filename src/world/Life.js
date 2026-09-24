@@ -131,7 +131,7 @@ function bicycleGeometry() {
   );
 }
 
-const COUNT = { low: 0, medium: 30, high: 70, ultra: 120 };
+const COUNT = { low: 12, medium: 30, high: 70, ultra: 120 };
 
 export function createLife(campus, registry) {
   const group = new THREE.Group();
