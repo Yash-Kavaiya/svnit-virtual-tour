@@ -314,9 +314,36 @@ export function buildCampus(overpassJson, opts = {}) {
     pois.push({ name: p.name, type: p.type ?? 'poi', x: round(xz[0]), z: round(xz[1]), rot: p.rot ?? 0 });
   }
 
+  // Snap each gate onto the nearest boundary edge (within 40 m) so it sits in
+  // the perimeter wall; `wallAngle` is that edge's direction in the x/z plane.
   const gates = (curated.gates ?? []).map((g) => {
-    const [x, z] = proj.toXZ(g);
-    return { name: g.name, x: round(x), z: round(z), rot: g.rot ?? 0, width: g.width ?? 12 };
+    const [ox, oz] = proj.toXZ(g);
+    let [x, z] = [ox, oz];
+    let wallAngle;
+    let best = 40;
+    for (let i = 0; i < boundary.length; i++) {
+      const [ax, az] = boundary[i];
+      const [bx, bz] = boundary[(i + 1) % boundary.length];
+      const ex = bx - ax;
+      const ez = bz - az;
+      const t = Math.max(0, Math.min(1, ((ox - ax) * ex + (oz - az) * ez) / (ex * ex + ez * ez || 1)));
+      const px = ax + ex * t;
+      const pz = az + ez * t;
+      const d = Math.hypot(px - ox, pz - oz);
+      if (d < best) {
+        best = d;
+        [x, z] = [px, pz];
+        wallAngle = Math.atan2(ez, ex);
+      }
+    }
+    return {
+      name: g.name,
+      x: round(x),
+      z: round(z),
+      rot: g.rot ?? 0,
+      width: g.width ?? 12,
+      ...(wallAngle !== undefined && { wallAngle: round(wallAngle, 4) }),
+    };
   });
 
   const xs = boundary.map((p) => p[0]);

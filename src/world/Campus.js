@@ -15,6 +15,7 @@ import { createLife } from './Life.js';
 import { PlayerController } from '../player/PlayerController.js';
 import { Collider } from '../player/Collision.js';
 import { TIME_PRESETS } from './TimeOfDay.js';
+import { gateFrame } from './gateFrame.js';
 
 const D2R = Math.PI / 180;
 
@@ -71,11 +72,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     (campus.bounds.minZ + campus.bounds.maxZ) / 2,
   ];
   if (gate) {
-    const inx = centre[0] - gate.x;
-    const inz = centre[1] - gate.z;
-    const inl = Math.hypot(inx, inz) || 1;
-    const dirx = inx / inl;
-    const dirz = inz / inl;
+    const { inx: dirx, inz: dirz } = gateFrame(gate, campus.bounds);
     // camera forward at yaw is (-sin yaw, -cos yaw); face the campus centre
     player.teleport(
       new THREE.Vector3(gate.x + dirx * 28, 1.7, gate.z + dirz * 28),

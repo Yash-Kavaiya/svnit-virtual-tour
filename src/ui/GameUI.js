@@ -158,7 +158,7 @@ export class GameUI {
   }
 
   #landmarkBlurb(l) {
-    if (l.kind === 'gate') return 'The main entrance to the SVNIT campus from Dumas Road.';
+    if (l.kind === 'gate') return 'The main entrance to the SVNIT campus, at Ichchhanath Circle on Dumas Road.';
     if (l.kind === 'memorial') {
       return 'Statue of Sardar Vallabhbhai Patel, the "Iron Man of India", after whom the institute is named.';
     }

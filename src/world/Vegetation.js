@@ -3,6 +3,7 @@ import { mulberry32, hashString } from '../core/rng.js';
 import { pointInRing } from '../shared/polygon.mjs';
 import { SPECIES, hedgeSegment } from './plantModels.js';
 import { Settings } from '../core/Settings.js';
+import { gateFrame } from './gateFrame.js';
 
 // Blue-noise-ish scatter with rejection. Deterministic for a given seed.
 export function scatterPoints({ bounds, count, seed = 1, reject, minSpacing = 6 }) {
@@ -76,16 +77,10 @@ export function createVegetation(campus, registry) {
     pad: HERO.has(b.category) ? 15 : 6.5,
   }));
   const waterRings = (water ?? []).map((w) => w.polygon);
-  // keep a clear apron around each gate (the spawn area)
-  const centre = [
-    (bounds.minX + bounds.maxX) / 2,
-    (bounds.minZ + bounds.maxZ) / 2,
-  ];
-  const spawnSpots = (campus.gates ?? []).map((g) => {
-    const dx = centre[0] - g.x;
-    const dz = centre[1] - g.z;
-    const l = Math.hypot(dx, dz) || 1;
-    return [g.x + (dx / l) * 28, g.z + (dz / l) * 28];
+  // spawn point plus the gate carriageway and forecourt stay clear
+  const spawnSpots = (campus.gates ?? []).flatMap((g) => {
+    const { inx, inz } = gateFrame(g, bounds);
+    return [-12, 0, 14, 28].map((d) => [g.x + inx * d, g.z + inz * d]);
   });
 
   const reject = (x, z) => {

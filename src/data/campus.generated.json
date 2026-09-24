@@ -6997,8 +6997,8 @@
   {
    "name": "Main Gate",
    "type": "zone",
-   "x": 92.87,
-   "z": 407.12,
+   "x": -2.63,
+   "z": -513.49,
    "rot": 0
   },
   {
@@ -7011,11 +7011,12 @@
  ],
  "gates": [
   {
-   "name": "Main Gate (Dumas Road)",
-   "x": 92.87,
-   "z": 407.12,
+   "name": "Main Gate (Ichchhanath)",
+   "x": 0.96,
+   "z": -503.78,
    "rot": 0,
-   "width": 16
+   "width": 16,
+   "wallAngle": -0.354
   }
  ]
 }

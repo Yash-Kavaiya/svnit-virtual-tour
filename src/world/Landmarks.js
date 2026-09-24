@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Text } from 'troika-three-text';
+import { gateFrame } from './gateFrame.js';
 
 export function createLandmarks(campus, registry) {
   const group = new THREE.Group();
@@ -11,13 +12,7 @@ export function createLandmarks(campus, registry) {
     campus.pois.find((p) => /statue|patel|sardar/i.test(p.name));
   if (statuePoi) group.add(makeStatue(statuePoi));
 
-  for (const gate of campus.gates ?? []) {
-    const centre = [
-      (campus.bounds.minX + campus.bounds.maxX) / 2,
-      (campus.bounds.minZ + campus.bounds.maxZ) / 2,
-    ];
-    group.add(makeGate(gate, centre));
-  }
+  for (const gate of campus.gates ?? []) group.add(makeGate(gate, gateFrame(gate, campus.bounds)));
 
   // flagpole + fountain at the Central Library Lawn zone
   const lawn = campus.pois.find((p) => /library lawn|central library lawn/i.test(p.name));
@@ -92,54 +87,109 @@ function makeStatue(poi) {
   return g;
 }
 
-function makeGate(gate, centre) {
+function makeGate(gate, { inx, inz }) {
   const g = new THREE.Group();
   g.position.set(gate.x, 0, gate.z);
-  const inx = centre[0] - gate.x;
-  const inz = centre[1] - gate.z;
-  g.rotation.y = Math.atan2(inx, inz);
+  g.rotation.y = Math.atan2(inx, inz); // local +z points into campus
 
   const masonry = new THREE.MeshStandardMaterial({ color: '#c9a877', roughness: 0.95 });
-  const beamMat = new THREE.MeshStandardMaterial({ color: '#7a5230', roughness: 0.9 });
+  const stone = new THREE.MeshStandardMaterial({ color: '#8c6f4e', roughness: 0.9 });
+  const boardMat = new THREE.MeshStandardMaterial({ color: '#6b1f1f', roughness: 0.7 });
+  const steel = new THREE.MeshStandardMaterial({ color: '#23262b', roughness: 0.5, metalness: 0.6 });
+  const glass = new THREE.MeshStandardMaterial({ color: '#7f9ea6', roughness: 0.2, metalness: 0.3 });
   const w = gate.width ?? 14;
+  const box = (sx, sy, sz, mat, x, y, z) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    g.add(m);
+    return m;
+  };
 
-  for (const sx of [-w / 2, w / 2]) {
-    const pier = new THREE.Mesh(new THREE.BoxGeometry(1.6, 5, 1.6), masonry);
-    pier.position.set(sx, 2.5, 0);
-    pier.castShadow = true;
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(2, 0.5, 2), masonry);
-    cap.position.set(sx, 5.2, 0);
-    g.add(pier, cap);
+  // main piers: stone base, rendered shaft, projecting capital
+  for (const sx of [-w / 2 - 1, w / 2 + 1]) {
+    box(2.6, 1.2, 2.6, stone, sx, 0.6, 0);
+    box(2.2, 6.4, 2.2, masonry, sx, 4.4, 0);
+    box(2.8, 0.5, 2.8, stone, sx, 7.85, 0);
   }
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(w + 1.5, 1.1, 0.9), beamMat);
-  beam.position.set(0, 5.6, 0);
-  beam.castShadow = true;
-  g.add(beam);
+  // name board spanning the carriageway, readable from both sides
+  box(w + 4.4, 2.2, 0.7, boardMat, 0, 6.6, 0);
+  box(w + 5, 0.3, 1.1, stone, 0, 7.85, 0);
+  for (const side of [1, -1]) {
+    const lines = [
+      ['SARDAR VALLABHBHAI NATIONAL INSTITUTE OF TECHNOLOGY', 0.52, 6.95],
+      ['SURAT  ·  ESTD. 1961', 0.36, 6.25],
+    ];
+    for (const [txt, size, y] of lines) {
+      const t = new Text();
+      t.text = txt;
+      t.fontSize = size;
+      t.maxWidth = w + 3.8;
+      t.textAlign = 'center';
+      t.color = '#f2d58a';
+      t.anchorX = 'center';
+      t.anchorY = 'middle';
+      t.position.set(0, y, side * 0.37);
+      if (side < 0) t.rotation.y = Math.PI;
+      t.sync();
+      g.add(t);
+    }
+  }
 
-  const name = new Text();
-  name.text = 'SARDAR VALLABHBHAI NATIONAL INSTITUTE OF TECHNOLOGY';
-  name.fontSize = 0.42;
-  name.maxWidth = w;
-  name.textAlign = 'center';
-  name.color = '#f4ecd8';
-  name.anchorX = 'center';
-  name.anchorY = 'middle';
-  name.position.set(0, 5.6, 0.5);
-  name.sync();
-  g.add(name);
+  // pedestrian wickets and boundary-wall stubs either side
+  for (const s of [-1, 1]) {
+    const x0 = s * (w / 2 + 2.1);
+    box(0.9, 3.2, 0.9, masonry, x0 + s * 2.6, 1.6, 0);
+    box(2.6, 0.35, 1.0, stone, x0 + s * 1.3, 3.0, 0); // wicket lintel
+    box(14, 2.4, 0.35, masonry, x0 + s * 10, 1.2, 0); // wall
+    box(14, 0.15, 0.5, stone, x0 + s * 10, 2.45, 0);
+    // sliding gate leaf, parked open behind the wall stub
+    const leaf = new THREE.Group();
+    for (let i = 0; i <= 14; i++) {
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.05, 2.1, 0.05), steel);
+      bar.position.set(-w / 4 + (i * w) / 28, 1.15, 0);
+      leaf.add(bar);
+    }
+    for (const y of [0.2, 1.15, 2.15]) {
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(w / 2, 0.08, 0.08), steel);
+      rail.position.set(0, y, 0);
+      leaf.add(rail);
+    }
+    leaf.position.set(s * (w / 2 + 2.1 + w / 4 + 1.2), 0, 0.6);
+    g.add(leaf);
+  }
 
-  // guard cabin + boom
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.6, 2.4), masonry);
-  cabin.position.set(w / 2 + 3, 1.3, 3);
-  cabin.castShadow = true;
-  g.add(cabin);
-  const boom = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.06, 0.06, w, 6),
-    new THREE.MeshStandardMaterial({ color: '#c94' }),
-  );
-  boom.rotation.z = Math.PI / 2;
-  boom.position.set(0, 1.1, 2);
-  g.add(boom);
+  // paved carriageway from the road outside to the campus avenue, kerbed
+  const paving = new THREE.MeshStandardMaterial({ color: '#56565a', roughness: 0.95 });
+  const kerb = new THREE.MeshStandardMaterial({ color: '#d9d4c7', roughness: 0.9 });
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(w, 46), paving);
+  road.rotation.x = -Math.PI / 2;
+  road.position.set(0, 0.06, 9);
+  road.receiveShadow = true;
+  g.add(road);
+  for (const s of [-1, 1]) box(0.3, 0.18, 46, kerb, s * (w / 2 + 0.15), 0.09, 9);
+  const forecourt = new THREE.Mesh(new THREE.PlaneGeometry(w + 44, 12), paving);
+  forecourt.rotation.x = -Math.PI / 2;
+  forecourt.position.set(0, 0.05, -8);
+  forecourt.receiveShadow = true;
+  g.add(forecourt);
+
+  // guard cabin inside the gate, with a glazed front and flat roof
+  const cx = w / 2 + 5;
+  box(3.2, 2.7, 3, masonry, cx, 1.35, 4.5);
+  box(3.8, 0.25, 3.6, stone, cx, 2.85, 4.5);
+  box(2.2, 1.0, 0.06, glass, cx, 1.7, 3.0 - 0.02);
+  box(0.06, 1.0, 1.8, glass, cx - 1.62, 1.7, 4.5);
+
+  // boom barrier: striped arm on a post
+  box(0.4, 1.1, 0.4, steel, w / 2 - 0.4, 0.55, 3.2);
+  const red = new THREE.MeshStandardMaterial({ color: '#c0392b', roughness: 0.6 });
+  const white = new THREE.MeshStandardMaterial({ color: '#f1efe9', roughness: 0.6 });
+  const seg = (w - 1) / 8;
+  for (let i = 0; i < 8; i++) {
+    box(seg, 0.12, 0.12, i % 2 ? white : red, w / 2 - 0.6 - seg * (i + 0.5), 1.05, 3.2);
+  }
 
   g.userData.landmark = { name: 'Main Gate', kind: 'gate' };
   return g;

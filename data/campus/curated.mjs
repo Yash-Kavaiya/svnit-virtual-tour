@@ -293,13 +293,13 @@ export default {
   // POIs OSM lacks inside the campus (local metres via `xz`).
   extraPois: [{ name: 'Open Air Theatre', type: 'poi', xz: [135, -10] }],
 
-  gates: [{ name: 'Main Gate (Dumas Road)', lat: 21.1591, lon: 72.786, rot: 0, width: 16 }],
+  gates: [{ name: 'Main Gate (Ichchhanath)', lat: 21.16737, lon: 72.78508, rot: 0, width: 16 }],
 
   zones: [
     { name: 'Academic Zone', lat: 21.1634, lon: 72.7852 },
     { name: 'Central Library Lawn', lat: 21.1639, lon: 72.7858 },
     { name: 'Hostel Zone', lat: 21.1606, lon: 72.7866 },
     { name: 'Sports Complex', lat: 21.1655, lon: 72.7844 },
-    { name: 'Main Gate', lat: 21.1591, lon: 72.786 },
+    { name: 'Main Gate', lat: 21.16737, lon: 72.78508 },
   ],
 };

@@ -4,6 +4,7 @@ import { lampPost, bench, bin, bollard, busStop } from './propModels.js';
 import { Settings } from '../core/Settings.js';
 import { TIME_PRESETS } from './TimeOfDay.js';
 import { events } from '../core/events.js';
+import { gateFrame } from './gateFrame.js';
 
 export function createStreetKit(campus, registry, buildingsApi) {
   const group = new THREE.Group();
@@ -78,12 +79,18 @@ export function createStreetKit(campus, registry, buildingsApi) {
   const zones = campus.pois.filter((p) => p.type === 'zone');
   const gate = campus.gates?.[0];
   const stopSpots = [];
-  if (gate) stopSpots.push([gate.x, gate.z + 20]);
+  if (gate) {
+    // outside the gate, beside the carriageway, facing the road
+    const { inx, inz, halfOpening } = gateFrame(gate, campus.bounds);
+    const side = halfOpening + 12;
+    stopSpots.push([gate.x - inx * 9 + inz * side, gate.z - inz * 9 - inx * side, Math.atan2(-inx, -inz)]);
+  }
   const acad = zones.find((z) => /academic/i.test(z.name));
-  if (acad) stopSpots.push([acad.x + 25, acad.z]);
-  for (const [x, z] of stopSpots) {
+  if (acad) stopSpots.push([acad.x + 25, acad.z, 0]);
+  for (const [x, z, rot] of stopSpots) {
     const s = busStop();
     s.position.set(x, 0, z);
+    s.rotation.y = rot;
     group.add(s);
   }
 
