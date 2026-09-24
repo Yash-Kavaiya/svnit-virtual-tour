@@ -15,8 +15,10 @@ Three buildings are enterable with hand-built interiors: the **Central
 Library**, a **Lecture Theatre (LT-2)**, and the **Administration Building
 lobby**.
 
-![Academic courtyard block](docs/screenshots/academic-courtyard.jpg)
-![The campus from above](docs/screenshots/campus-aerial.jpg)
+![Main gate at Ichchhanath, with the Sardar Patel statue beyond](docs/screenshots/main-gate.jpg)
+![The campus from above](docs/screenshots/campus-aerial-3.jpg)
+![Staff quarters colony](docs/screenshots/staff-quarters.jpg)
+![Hostels at night](docs/screenshots/hostels-night.jpg)
 
 ## Run it
 
