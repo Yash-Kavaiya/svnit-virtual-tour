@@ -107,7 +107,8 @@ export function createStreetKit(campus, registry, buildingsApi) {
     // outside the gate, beside the carriageway, facing the road
     const { inx, inz, halfOpening } = gateFrame(gate, campus.bounds);
     const side = halfOpening + 12;
-    stopSpots.push([gate.x - inx * 9 + inz * side, gate.z - inz * 9 - inx * side, Math.atan2(-inx, -inz)]);
+    // on the emblem-pillar side, clear of the name wall
+    stopSpots.push([gate.x - inx * 9 - inz * side, gate.z - inz * 9 + inx * side, Math.atan2(-inx, -inz)]);
   }
   const acad = zones.find((z) => /academic/i.test(z.name));
   if (acad) stopSpots.push([acad.x + 25, acad.z, 0]);

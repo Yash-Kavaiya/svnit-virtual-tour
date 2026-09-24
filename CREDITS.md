@@ -45,3 +45,17 @@ or endorsed by the Sardar Vallabhbhai National Institute of Technology.
 Facades and interiors are interpretive and should not be relied on as
 accurate depictions of the real campus. Corrections are welcome — edit
 `data/campus/curated.mjs` and re-run `npm run data`.
+
+## Fonts
+
+- `public/fonts/NotoSansDevanagari-Bold.woff` — Noto Sans Devanagari, © Google,
+  SIL Open Font License 1.1 (via Fontsource). Used for the Hindi name on the
+  main gate.
+
+## Reference sources for accuracy
+
+- SVNIT Hostel Information Brochure 2025-26 (svnit.ac.in) — hostel names,
+  types and room counts; photographs of the main entrance (red name wall,
+  "SVNIT" letters, emblem pillar, flag mast).
+- OpenStreetMap multipolygon relations (fetched 2026-09-24) — Mother Teresa
+  Bhavan, Nehru Bhavan, New CRC and courtyard blocks.

@@ -39,11 +39,6 @@ export function createLandmarks(campus, registry) {
     group.add(makeAtmKiosk(atm, nearestRoadPoint(campus.roads, atm.x, atm.z)));
   }
 
-  // flagpole at the Central Library Lawn zone
-  const lawn = campus.pois.find((p) => /library lawn|central library lawn/i.test(p.name));
-  if (lawn) {
-    group.add(makeFlagpole(lawn.x + 8, lawn.z));
-  }
 
   group.traverse((o) => {
     if (o.userData && (o.userData.poi || o.userData.landmark)) pickables.push(o);
@@ -163,16 +158,24 @@ function makeStatue(poi, faceTo) {
   return g;
 }
 
+// Main gate after the institute's own photos (Hostel Information Brochure
+// 2025-26): a long, low red-clad entrance wall carrying the name in Hindi and
+// English with big "SVNIT" letters standing on top, grey sliding steel gates,
+// the round emblem on a red pillar, and the national flag on a tall mast.
+const DEVANAGARI_FONT = '/fonts/NotoSansDevanagari-Bold.woff';
+
 function makeGate(gate, { inx, inz }) {
   const g = new THREE.Group();
   g.position.set(gate.x, 0, gate.z);
-  g.rotation.y = Math.atan2(inx, inz); // local +z points into campus
+  g.rotation.y = Math.atan2(inx, inz); // local +z points into campus; -z faces the road
 
-  const masonry = new THREE.MeshStandardMaterial({ color: '#c9a877', roughness: 0.95 });
-  const stone = new THREE.MeshStandardMaterial({ color: '#8c6f4e', roughness: 0.9 });
-  const boardMat = new THREE.MeshStandardMaterial({ color: '#6b1f1f', roughness: 0.7 });
-  const steel = new THREE.MeshStandardMaterial({ color: '#23262b', roughness: 0.5, metalness: 0.6 });
+  const red = new THREE.MeshStandardMaterial({ color: '#9e3a28', roughness: 0.75 });
+  const redDark = new THREE.MeshStandardMaterial({ color: '#7c2a1c', roughness: 0.8 });
+  const coping = new THREE.MeshStandardMaterial({ color: '#d9d2c3', roughness: 0.85 });
+  const masonry = new THREE.MeshStandardMaterial({ color: '#c9b48f', roughness: 0.95 });
+  const steel = new THREE.MeshStandardMaterial({ color: '#8d9399', roughness: 0.45, metalness: 0.6 });
   const glass = new THREE.MeshStandardMaterial({ color: '#7f9ea6', roughness: 0.2, metalness: 0.3 });
+  const gold = new THREE.MeshStandardMaterial({ color: '#c9a44a', roughness: 0.35, metalness: 0.7 });
   const w = gate.width ?? 14;
   const box = (sx, sy, sz, mat, x, y, z) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
@@ -182,61 +185,88 @@ function makeGate(gate, { inx, inz }) {
     g.add(m);
     return m;
   };
+  const text = (str, { size, x, y, z, color = '#f4ead2', font, back = false, maxWidth }) => {
+    const t = new Text();
+    t.text = str;
+    t.fontSize = size;
+    if (font) t.font = font;
+    if (maxWidth) t.maxWidth = maxWidth;
+    t.textAlign = 'center';
+    t.color = color;
+    // single-sided, so back-to-back copies don't show through each other
+    t.material = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
+    t.anchorX = 'center';
+    t.anchorY = 'middle';
+    t.position.set(x, y, z);
+    if (back) t.rotation.y = Math.PI;
+    t.sync();
+    g.add(t);
+    return t;
+  };
 
-  // main piers: stone base, rendered shaft, projecting capital
-  for (const sx of [-w / 2 - 1, w / 2 + 1]) {
-    box(2.6, 1.2, 2.6, stone, sx, 0.6, 0);
-    box(2.2, 6.4, 2.2, masonry, sx, 4.4, 0);
-    box(2.8, 0.5, 2.8, stone, sx, 7.85, 0);
+  // --- name wall: on the left as you face the gate from the road (local +x,
+  // since the road side is -z)
+  const wallLen = 24;
+  const wx = w / 2 + 1 + wallLen / 2;
+  box(wallLen, 2.8, 0.9, red, wx, 1.4, 0);
+  box(wallLen + 0.3, 0.18, 1.1, coping, wx, 2.89, 0);
+  box(wallLen + 0.4, 0.35, 1.2, redDark, wx, 0.17, 0); // plinth
+  text('सरदार वल्लभभाई राष्ट्रीय प्रौद्योगिकी संस्थान, सूरत', {
+    size: 0.42,
+    x: wx,
+    y: 2.1,
+    z: -0.47,
+    font: DEVANAGARI_FONT,
+    back: true,
+    maxWidth: wallLen - 2,
+  });
+  text('SARDAR VALLABHBHAI NATIONAL INSTITUTE OF TECHNOLOGY', {
+    size: 0.4,
+    x: wx,
+    y: 1.45,
+    z: -0.47,
+    back: true,
+    maxWidth: wallLen - 2,
+  });
+  text('SURAT', { size: 0.34, x: wx, y: 0.95, z: -0.47, back: true });
+  // "SVNIT" letters standing on the wall, readable from both sides. Troika
+  // text is unlit, so it glows against the night like the real lit sign.
+  for (const back of [true, false]) {
+    text('SVNIT', { size: 1.9, x: wx - 2, y: 4.0, z: back ? -0.05 : 0.05, color: '#fbfaf5', back });
   }
-  // name board spanning the carriageway, readable from both sides
-  box(w + 4.4, 2.2, 0.7, boardMat, 0, 6.6, 0);
-  box(w + 5, 0.3, 1.1, stone, 0, 7.85, 0);
-  for (const side of [1, -1]) {
-    const lines = [
-      ['SARDAR VALLABHBHAI NATIONAL INSTITUTE OF TECHNOLOGY', 0.52, 6.95],
-      ['SURAT  ·  ESTD. 1961', 0.36, 6.25],
-    ];
-    for (const [txt, size, y] of lines) {
-      const t = new Text();
-      t.text = txt;
-      t.fontSize = size;
-      t.maxWidth = w + 3.8;
-      t.textAlign = 'center';
-      t.color = '#f2d58a';
-      t.anchorX = 'center';
-      t.anchorY = 'middle';
-      t.position.set(0, y, side * 0.37);
-      if (side < 0) t.rotation.y = Math.PI;
-      t.sync();
-      g.add(t);
-    }
-  }
+  // low planter of shrubs along the wall's road face
+  const hedge = new THREE.MeshStandardMaterial({ color: '#3f6b2c', roughness: 1 });
+  box(wallLen - 1, 0.6, 1.0, hedge, wx, 0.3, -1.1);
 
-  // pedestrian wickets and boundary-wall stubs either side
-  for (const s of [-1, 1]) {
-    const x0 = s * (w / 2 + 2.1);
-    box(0.9, 3.2, 0.9, masonry, x0 + s * 2.6, 1.6, 0);
-    box(2.6, 0.35, 1.0, stone, x0 + s * 1.3, 3.0, 0); // wicket lintel
-    box(14, 2.4, 0.35, masonry, x0 + s * 10, 1.2, 0); // wall
-    box(14, 0.15, 0.5, stone, x0 + s * 10, 2.45, 0);
-    // sliding gate leaf, parked open behind the wall stub
-    const leaf = new THREE.Group();
-    for (let i = 0; i <= 14; i++) {
-      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.05, 2.1, 0.05), steel);
-      bar.position.set(-w / 4 + (i * w) / 28, 1.15, 0);
-      leaf.add(bar);
-    }
-    for (const y of [0.2, 1.15, 2.15]) {
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(w / 2, 0.08, 0.08), steel);
-      rail.position.set(0, y, 0);
-      leaf.add(rail);
-    }
-    leaf.position.set(s * (w / 2 + 2.1 + w / 4 + 1.2), 0, 0.6);
-    g.add(leaf);
-  }
+  // --- emblem pillar on the right as seen from the road, then a shorter wall
+  const px = -w / 2 - 1.6;
+  box(2.4, 4.4, 1.4, red, px, 2.2, 0);
+  box(2.7, 0.2, 1.7, coping, px, 4.5, 0);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.09, 8, 40), gold);
+  ring.position.set(px, 2.7, -0.74);
+  g.add(ring);
+  const disc = new THREE.Mesh(
+    new THREE.CircleGeometry(0.8, 40),
+    new THREE.MeshStandardMaterial({ color: '#f1ead8', roughness: 0.6 }),
+  );
+  disc.position.set(px, 2.7, -0.72);
+  disc.rotation.y = Math.PI;
+  g.add(disc);
+  const inner = new THREE.Mesh(
+    new THREE.CircleGeometry(0.5, 32),
+    new THREE.MeshStandardMaterial({ color: '#2f4f8f', roughness: 0.6 }),
+  );
+  inner.position.set(px, 2.7, -0.73);
+  inner.rotation.y = Math.PI;
+  g.add(inner);
+  box(10, 2.8, 0.9, red, px - 6.2, 1.4, 0);
+  box(10.3, 0.18, 1.1, coping, px - 6.2, 2.89, 0);
 
-  // paved carriageway from the road outside to the campus avenue, kerbed
+  // --- grey sliding gates, parked open behind the name wall
+  for (let i = 0; i <= 22; i++) box(0.06, 2.2, 0.06, steel, w / 2 + 1.5 + i * 0.36, 1.2, 1.0);
+  for (const y of [0.2, 1.2, 2.25]) box(8.2, 0.1, 0.1, steel, w / 2 + 5.5, y, 1.0);
+
+  // --- paved carriageway into campus and forecourt on the road side
   const paving = new THREE.MeshStandardMaterial({ color: '#56565a', roughness: 0.95 });
   const kerb = new THREE.MeshStandardMaterial({ color: '#d9d4c7', roughness: 0.9 });
   const road = new THREE.Mesh(new THREE.PlaneGeometry(w, 16), paving);
@@ -245,54 +275,94 @@ function makeGate(gate, { inx, inz }) {
   road.receiveShadow = true;
   g.add(road);
   for (const s of [-1, 1]) box(0.3, 0.18, 16, kerb, s * (w / 2 + 0.15), 0.09, 6);
-  const forecourt = new THREE.Mesh(new THREE.PlaneGeometry(w + 44, 12), paving);
+  const forecourt = new THREE.Mesh(new THREE.PlaneGeometry(w + 60, 12), paving);
   forecourt.rotation.x = -Math.PI / 2;
   forecourt.position.set(0, 0.05, -8);
   forecourt.receiveShadow = true;
   g.add(forecourt);
 
-  // guard cabin inside the gate, with a glazed front and flat roof
-  const cx = w / 2 + 5;
-  box(3.2, 2.7, 3, masonry, cx, 1.35, 4.5);
-  box(3.8, 0.25, 3.6, stone, cx, 2.85, 4.5);
-  box(2.2, 1.0, 0.06, glass, cx, 1.7, 3.0 - 0.02);
-  box(0.06, 1.0, 1.8, glass, cx - 1.62, 1.7, 4.5);
+  // --- guard cabin inside the gate, with a glazed front and flat roof
+  const cx = -w / 2 - 5;
+  box(3.2, 2.7, 3, masonry, cx, 1.35, 5);
+  box(3.8, 0.25, 3.6, red, cx, 2.85, 5);
+  box(2.2, 1.0, 0.06, glass, cx, 1.7, 3.48);
+  box(0.06, 1.0, 1.8, glass, cx + 1.62, 1.7, 5);
 
-  // boom barrier: striped arm on a post
+  // --- boom barrier: striped arm on a post
   box(0.4, 1.1, 0.4, steel, w / 2 - 0.4, 0.55, 3.2);
-  const red = new THREE.MeshStandardMaterial({ color: '#c0392b', roughness: 0.6 });
+  const redM = new THREE.MeshStandardMaterial({ color: '#c0392b', roughness: 0.6 });
   const white = new THREE.MeshStandardMaterial({ color: '#f1efe9', roughness: 0.6 });
   const seg = (w - 1) / 8;
   for (let i = 0; i < 8; i++) {
-    box(seg, 0.12, 0.12, i % 2 ? white : red, w / 2 - 0.6 - seg * (i + 0.5), 1.05, 3.2);
+    box(seg, 0.12, 0.12, i % 2 ? white : redM, w / 2 - 0.6 - seg * (i + 0.5), 1.05, 3.2);
   }
+
+  // --- the national flag on a tall mast just inside, east of the entrance
+  g.add(makeFlagpole(-w / 2 - 14, 12));
 
   g.userData.landmark = { name: 'Main Gate', kind: 'gate' };
   return g;
 }
 
-function makeFlagpole(x, z) {
+// Tall mast with the Indian tricolour (saffron / white / green, navy chakra).
+function makeFlagpole(x, z, height = 24) {
   const g = new THREE.Group();
   g.position.set(x, 0, z);
-  const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.8, 1.0, 0.6, 12),
-    new THREE.MeshStandardMaterial({ color: '#b9b2a2', roughness: 1 }),
-  );
-  base.position.y = 0.3;
+  const plinth = new THREE.MeshStandardMaterial({ color: '#b9b2a2', roughness: 1 });
+  for (let i = 0; i < 3; i++) {
+    const s = 3.2 - i * 0.9;
+    const step = new THREE.Mesh(new THREE.BoxGeometry(s, 0.35, s), plinth);
+    step.position.y = 0.17 + i * 0.35;
+    step.receiveShadow = true;
+    g.add(step);
+  }
   const pole = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.08, 0.1, 14, 8),
-    new THREE.MeshStandardMaterial({ color: '#d8d8d8', roughness: 0.4, metalness: 0.4 }),
+    new THREE.CylinderGeometry(0.09, 0.16, height, 10),
+    new THREE.MeshStandardMaterial({ color: '#d8d8d8', roughness: 0.35, metalness: 0.5 }),
   );
-  pole.position.y = 7.3;
+  pole.position.y = height / 2 + 1;
   pole.castShadow = true;
-  const flag = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.4, 1.5),
-    new THREE.MeshStandardMaterial({ color: '#f0932b', side: THREE.DoubleSide }),
+  const flagH = 2.4;
+  const flagW = flagH * 1.5; // 3:2
+  const cloth = new THREE.Mesh(
+    new THREE.PlaneGeometry(flagW, flagH, 12, 4),
+    new THREE.MeshStandardMaterial({ map: tricolourTexture(), side: THREE.DoubleSide, roughness: 0.9 }),
   );
-  flag.position.set(1.3, 13, 0);
-  g.add(base, pole, flag);
-  g.userData.animatedFlag = flag;
+  cloth.position.set(flagW / 2 + 0.1, height + 1 - flagH / 2 - 0.2, 0);
+  cloth.castShadow = true;
+  g.add(pole, cloth);
+  g.userData.animatedFlag = cloth;
   return g;
+}
+
+function tricolourTexture(W = 96, H = 64) {
+  const data = new Uint8Array(W * H * 4);
+  const band = [
+    [255, 153, 51],
+    [255, 255, 255],
+    [19, 136, 8],
+  ];
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      // DataTexture rows start at the bottom: green first
+      let c = band[2 - Math.min(2, Math.floor((y / H) * 3))];
+      const d = Math.hypot(x - W / 2 + 0.5, y - H / 2 + 0.5);
+      const r = H / 6.2;
+      const ang = Math.atan2(y - H / 2, x - W / 2);
+      const spoke = Math.abs(Math.sin(ang * 12)) < 0.18 && d < r;
+      if ((d < r && d > r - 1.3) || spoke || d < 1.2) c = [0, 0, 128];
+      const i = (y * W + x) * 4;
+      data[i] = c[0];
+      data[i + 1] = c[1];
+      data[i + 2] = c[2];
+      data[i + 3] = 255;
+    }
+  }
+  const tex = new THREE.DataTexture(data, W, H);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.magFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  return tex;
 }
 
 function nearestRoadPoint(roads, x, z) {
