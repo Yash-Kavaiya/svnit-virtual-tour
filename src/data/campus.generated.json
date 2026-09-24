@@ -11754,21 +11754,38 @@
    "rot": 0
   },
   {
-   "name": "Main Gate",
+   "name": "Old Gate",
    "type": "zone",
    "x": -2.63,
    "z": -513.49,
+   "rot": 0
+  },
+  {
+   "name": "New Gate",
+   "type": "zone",
+   "x": -305.6,
+   "z": -368.8,
    "rot": 0
   }
  ],
  "gates": [
   {
-   "name": "Main Gate (Ichchhanath)",
+   "name": "Old Gate (Ichchhanath)",
    "x": 0.96,
    "z": -503.78,
    "rot": 0,
    "width": 16,
+   "style": "old",
    "wallAngle": -0.354
+  },
+  {
+   "name": "New Gate (Dumas Road)",
+   "x": -305.6,
+   "z": -368.8,
+   "rot": 0,
+   "width": 16,
+   "style": "new",
+   "wallAngle": -0.7382
   }
  ]
 }

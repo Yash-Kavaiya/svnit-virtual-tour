@@ -121,7 +121,7 @@ export function createStreetKit(campus, registry, buildingsApi) {
 
   // --- direction signboards at zone centres
   for (const z of zones) {
-    if (/main gate/i.test(z.name)) continue;
+    if (/gate/i.test(z.name)) continue; // gates carry their own name boards
     const sign = new THREE.Group();
     const post = new THREE.Mesh(
       new THREE.CylinderGeometry(0.06, 0.06, 2.4, 6),

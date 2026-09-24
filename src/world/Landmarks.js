@@ -158,117 +158,140 @@ function makeStatue(poi, faceTo) {
   return g;
 }
 
-// Main gate after the institute's own photos (Hostel Information Brochure
-// 2025-26): a long, low red-clad entrance wall carrying the name in Hindi and
-// English with big "SVNIT" letters standing on top, grey sliding steel gates,
-// the round emblem on a red pillar, and the national flag on a tall mast.
+// SVNIT has two entrances, both modelled after the institute's own photos
+// (Hostel Information Brochure 2025-26):
+//  - old gate (Ichchhanath): a red portal frame whose lintel carries a maroon
+//    name board in Hindi and English, with the national flag on a mast behind;
+//  - new gate (Dumas Road junction): a long, low red-clad name wall with big
+//    "SVNIT" letters on top, grey sliding gates and the emblem on a red pillar.
 const DEVANAGARI_FONT = '/fonts/NotoSansDevanagari-Bold.woff';
+const NAME_HI = 'सरदार वल्लभभाई राष्ट्रीय प्रौद्योगिकी संस्थान, सूरत';
+const NAME_EN = 'SARDAR VALLABHBHAI NATIONAL INSTITUTE OF TECHNOLOGY';
 
 function makeGate(gate, { inx, inz }) {
   const g = new THREE.Group();
   g.position.set(gate.x, 0, gate.z);
   g.rotation.y = Math.atan2(inx, inz); // local +z points into campus; -z faces the road
 
-  const red = new THREE.MeshStandardMaterial({ color: '#9e3a28', roughness: 0.75 });
-  const redDark = new THREE.MeshStandardMaterial({ color: '#7c2a1c', roughness: 0.8 });
-  const coping = new THREE.MeshStandardMaterial({ color: '#d9d2c3', roughness: 0.85 });
-  const masonry = new THREE.MeshStandardMaterial({ color: '#c9b48f', roughness: 0.95 });
-  const steel = new THREE.MeshStandardMaterial({ color: '#8d9399', roughness: 0.45, metalness: 0.6 });
-  const glass = new THREE.MeshStandardMaterial({ color: '#7f9ea6', roughness: 0.2, metalness: 0.3 });
-  const gold = new THREE.MeshStandardMaterial({ color: '#c9a44a', roughness: 0.35, metalness: 0.7 });
-  const w = gate.width ?? 14;
-  const box = (sx, sy, sz, mat, x, y, z) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
-    m.position.set(x, y, z);
-    m.castShadow = true;
-    m.receiveShadow = true;
-    g.add(m);
-    return m;
-  };
-  const text = (str, { size, x, y, z, color = '#f4ead2', font, back = false, maxWidth }) => {
-    const t = new Text();
-    t.text = str;
-    t.fontSize = size;
-    if (font) t.font = font;
-    if (maxWidth) t.maxWidth = maxWidth;
-    t.textAlign = 'center';
-    t.color = color;
-    // single-sided, so back-to-back copies don't show through each other
-    t.material = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
-    t.anchorX = 'center';
-    t.anchorY = 'middle';
-    t.position.set(x, y, z);
-    if (back) t.rotation.y = Math.PI;
-    t.sync();
-    g.add(t);
-    return t;
+  const k = {
+    g,
+    w: gate.width ?? 14,
+    red: new THREE.MeshStandardMaterial({ color: '#9e3a28', roughness: 0.75 }),
+    redDark: new THREE.MeshStandardMaterial({ color: '#7c2a1c', roughness: 0.8 }),
+    coping: new THREE.MeshStandardMaterial({ color: '#d9d2c3', roughness: 0.85 }),
+    steel: new THREE.MeshStandardMaterial({ color: '#8d9399', roughness: 0.45, metalness: 0.6 }),
+    box(sx, sy, sz, mat, x, y, z) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      g.add(m);
+      return m;
+    },
+    text(str, { size, x, y, z, color = '#f4ead2', font, back = false, maxWidth }) {
+      const t = new Text();
+      t.text = str;
+      t.fontSize = size;
+      if (font) t.font = font;
+      if (maxWidth) t.maxWidth = maxWidth;
+      t.textAlign = 'center';
+      t.color = color;
+      // single-sided, so back-to-back copies don't show through each other
+      t.material = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
+      t.anchorX = 'center';
+      t.anchorY = 'middle';
+      t.position.set(x, y, z);
+      if (back) t.rotation.y = Math.PI;
+      t.sync();
+      g.add(t);
+      return t;
+    },
   };
 
-  // --- name wall: on the left as you face the gate from the road (local +x,
-  // since the road side is -z)
+  if (gate.style === 'new') buildNewGate(k);
+  else buildOldGate(k);
+  buildGateApproach(k);
+
+  g.userData.landmark = { name: gate.name, kind: 'gate', style: gate.style ?? 'old' };
+  return g;
+}
+
+// Old gate: red portal frame, maroon name board on the lintel, flag behind.
+function buildOldGate({ g, w, red, redDark, coping, box, text }) {
+  const board = new THREE.MeshStandardMaterial({ color: '#5e1414', roughness: 0.6 });
+  const span = w + 3;
+  for (const s of [-1, 1]) {
+    const x = s * (w / 2 + 0.9);
+    box(1.6, 0.4, 1.6, redDark, x, 0.2, 0);
+    box(1.3, 6.2, 1.3, red, x, 3.3, 0); // pillar
+    box(1.6, 0.3, 1.6, coping, x, 6.55, 0); // capital
+    // flanking low red wall + railing stub
+    box(9, 1.4, 0.5, red, s * (w / 2 + 6.2), 0.7, 0);
+    box(9.2, 0.12, 0.7, coping, s * (w / 2 + 6.2), 1.46, 0);
+  }
+  box(span + 0.6, 0.55, 1.1, red, 0, 6.1, 0); // lintel
+  box(span - 0.4, 1.85, 0.3, board, 0, 4.9, -0.1); // name board, road face
+  box(span - 0.4, 1.85, 0.3, board, 0, 4.9, 0.1); // and campus face
+  for (const back of [true, false]) {
+    const z = back ? -0.27 : 0.27;
+    text(NAME_HI, { size: 0.46, x: 0, y: 5.35, z, font: DEVANAGARI_FONT, back, maxWidth: span - 1 });
+    text(NAME_EN, { size: 0.38, x: 0, y: 4.72, z, back, maxWidth: span - 1 });
+    text('SURAT  ·  ESTD. 1961', { size: 0.24, x: 0, y: 4.25, z, back, color: '#e8c872' });
+  }
+  // the national flag on a tall mast just behind the gate
+  g.add(makeFlagpole(0.8, 16));
+}
+
+// New gate: long red name wall with "SVNIT" letters, emblem pillar, sliding gates.
+function buildNewGate({ g, w, red, redDark, coping, steel, box, text }) {
+  const gold = new THREE.MeshStandardMaterial({ color: '#c9a44a', roughness: 0.35, metalness: 0.7 });
+  // name wall on the left as you face the gate from the road (local +x)
   const wallLen = 24;
   const wx = w / 2 + 1 + wallLen / 2;
   box(wallLen, 2.8, 0.9, red, wx, 1.4, 0);
   box(wallLen + 0.3, 0.18, 1.1, coping, wx, 2.89, 0);
   box(wallLen + 0.4, 0.35, 1.2, redDark, wx, 0.17, 0); // plinth
-  text('सरदार वल्लभभाई राष्ट्रीय प्रौद्योगिकी संस्थान, सूरत', {
-    size: 0.42,
-    x: wx,
-    y: 2.1,
-    z: -0.47,
-    font: DEVANAGARI_FONT,
-    back: true,
-    maxWidth: wallLen - 2,
-  });
-  text('SARDAR VALLABHBHAI NATIONAL INSTITUTE OF TECHNOLOGY', {
-    size: 0.4,
-    x: wx,
-    y: 1.45,
-    z: -0.47,
-    back: true,
-    maxWidth: wallLen - 2,
-  });
+  text(NAME_HI, { size: 0.42, x: wx, y: 2.1, z: -0.47, font: DEVANAGARI_FONT, back: true, maxWidth: wallLen - 2 });
+  text(NAME_EN, { size: 0.4, x: wx, y: 1.45, z: -0.47, back: true, maxWidth: wallLen - 2 });
   text('SURAT', { size: 0.34, x: wx, y: 0.95, z: -0.47, back: true });
   // "SVNIT" letters standing on the wall, readable from both sides. Troika
   // text is unlit, so it glows against the night like the real lit sign.
   for (const back of [true, false]) {
     text('SVNIT', { size: 1.9, x: wx - 2, y: 4.0, z: back ? -0.05 : 0.05, color: '#fbfaf5', back });
   }
-  // low planter of shrubs along the wall's road face
   const hedge = new THREE.MeshStandardMaterial({ color: '#3f6b2c', roughness: 1 });
-  box(wallLen - 1, 0.6, 1.0, hedge, wx, 0.3, -1.1);
+  box(wallLen - 1, 0.6, 1.0, hedge, wx, 0.3, -1.1); // planter along the road face
 
-  // --- emblem pillar on the right as seen from the road, then a shorter wall
+  // emblem pillar on the right as seen from the road, then a shorter wall
   const px = -w / 2 - 1.6;
   box(2.4, 4.4, 1.4, red, px, 2.2, 0);
   box(2.7, 0.2, 1.7, coping, px, 4.5, 0);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.09, 8, 40), gold);
   ring.position.set(px, 2.7, -0.74);
   g.add(ring);
-  const disc = new THREE.Mesh(
-    new THREE.CircleGeometry(0.8, 40),
-    new THREE.MeshStandardMaterial({ color: '#f1ead8', roughness: 0.6 }),
-  );
-  disc.position.set(px, 2.7, -0.72);
-  disc.rotation.y = Math.PI;
-  g.add(disc);
-  const inner = new THREE.Mesh(
-    new THREE.CircleGeometry(0.5, 32),
-    new THREE.MeshStandardMaterial({ color: '#2f4f8f', roughness: 0.6 }),
-  );
-  inner.position.set(px, 2.7, -0.73);
-  inner.rotation.y = Math.PI;
-  g.add(inner);
+  for (const [r, color, z] of [
+    [0.8, '#f1ead8', -0.72],
+    [0.5, '#2f4f8f', -0.73],
+  ]) {
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(r, 40), new THREE.MeshStandardMaterial({ color, roughness: 0.6 }));
+    disc.position.set(px, 2.7, z);
+    disc.rotation.y = Math.PI;
+    g.add(disc);
+  }
   box(10, 2.8, 0.9, red, px - 6.2, 1.4, 0);
   box(10.3, 0.18, 1.1, coping, px - 6.2, 2.89, 0);
 
-  // --- grey sliding gates, parked open behind the name wall
+  // grey sliding gates, parked open behind the name wall
   for (let i = 0; i <= 22; i++) box(0.06, 2.2, 0.06, steel, w / 2 + 1.5 + i * 0.36, 1.2, 1.0);
   for (const y of [0.2, 1.2, 2.25]) box(8.2, 0.1, 0.1, steel, w / 2 + 5.5, y, 1.0);
+}
 
-  // --- paved carriageway into campus and forecourt on the road side
+// Shared: kerbed carriageway, road-side forecourt, guard cabin, boom barrier.
+function buildGateApproach({ g, w, red, steel, box }) {
   const paving = new THREE.MeshStandardMaterial({ color: '#56565a', roughness: 0.95 });
   const kerb = new THREE.MeshStandardMaterial({ color: '#d9d4c7', roughness: 0.9 });
+  const masonry = new THREE.MeshStandardMaterial({ color: '#c9b48f', roughness: 0.95 });
+  const glass = new THREE.MeshStandardMaterial({ color: '#7f9ea6', roughness: 0.2, metalness: 0.3 });
   const road = new THREE.Mesh(new THREE.PlaneGeometry(w, 16), paving);
   road.rotation.x = -Math.PI / 2;
   road.position.set(0, 0.06, 6);
@@ -281,14 +304,12 @@ function makeGate(gate, { inx, inz }) {
   forecourt.receiveShadow = true;
   g.add(forecourt);
 
-  // --- guard cabin inside the gate, with a glazed front and flat roof
   const cx = -w / 2 - 5;
   box(3.2, 2.7, 3, masonry, cx, 1.35, 5);
   box(3.8, 0.25, 3.6, red, cx, 2.85, 5);
   box(2.2, 1.0, 0.06, glass, cx, 1.7, 3.48);
   box(0.06, 1.0, 1.8, glass, cx + 1.62, 1.7, 5);
 
-  // --- boom barrier: striped arm on a post
   box(0.4, 1.1, 0.4, steel, w / 2 - 0.4, 0.55, 3.2);
   const redM = new THREE.MeshStandardMaterial({ color: '#c0392b', roughness: 0.6 });
   const white = new THREE.MeshStandardMaterial({ color: '#f1efe9', roughness: 0.6 });
@@ -296,12 +317,6 @@ function makeGate(gate, { inx, inz }) {
   for (let i = 0; i < 8; i++) {
     box(seg, 0.12, 0.12, i % 2 ? white : redM, w / 2 - 0.6 - seg * (i + 0.5), 1.05, 3.2);
   }
-
-  // --- the national flag on a tall mast just inside, east of the entrance
-  g.add(makeFlagpole(-w / 2 - 14, 12));
-
-  g.userData.landmark = { name: 'Main Gate', kind: 'gate' };
-  return g;
 }
 
 // Tall mast with the Indian tricolour (saffron / white / green, navy chakra).

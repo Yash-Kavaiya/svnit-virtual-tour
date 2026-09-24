@@ -419,7 +419,7 @@ export function buildCampus(overpassJson, opts = {}) {
   // Snap each gate onto the nearest boundary edge (within 40 m) so it sits in
   // the perimeter wall; `wallAngle` is that edge's direction in the x/z plane.
   const gates = (curated.gates ?? []).map((g) => {
-    const [ox, oz] = proj.toXZ(g);
+    const [ox, oz] = g.xz ?? proj.toXZ(g);
     let [x, z] = [ox, oz];
     let wallAngle;
     let best = 40;
@@ -444,6 +444,7 @@ export function buildCampus(overpassJson, opts = {}) {
       z: round(z),
       rot: g.rot ?? 0,
       width: g.width ?? 12,
+      ...(g.style && { style: g.style }),
       ...(wallAngle !== undefined && { wallAngle: round(wallAngle, 4) }),
     };
   });

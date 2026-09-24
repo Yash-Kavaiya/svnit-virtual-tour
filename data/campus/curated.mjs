@@ -268,7 +268,16 @@ export default {
   // No hand-added POIs: an 'Open Air Theatre' marker was unverified.
   extraPois: [],
 
-  gates: [{ name: 'Main Gate (Ichchhanath)', lat: 21.16737, lon: 72.78508, rot: 0, width: 16 }],
+  // Two entrances. The old gate is OSM's 'Main Entrance - SVNIT' at
+  // Ichchhanath; the new gate is where the campus road (OSM way 940329520)
+  // leaves through the north-west wall to the Dumas Road junction. `style`
+  // picks the model: 'old' = red portal frame and name board with the flag
+  // mast, 'new' = red name wall with 'SVNIT' letters and the emblem pillar
+  // (both after photos in the SVNIT Hostel Information Brochure 2025-26).
+  gates: [
+    { name: 'Old Gate (Ichchhanath)', style: 'old', lat: 21.16737, lon: 72.78508, width: 16 },
+    { name: 'New Gate (Dumas Road)', style: 'new', xz: [-305.6, -368.8], width: 16 },
+  ],
 
   zones: [
     { name: 'Academic Zone', lat: 21.1634, lon: 72.7852 },
@@ -277,6 +286,7 @@ export default {
     { name: 'Hostel Zone', xz: [430, 150] },
     // centroid of OSM's 12 ha 'Student activity ground'
     { name: 'Sports Complex', xz: [115, 189] },
-    { name: 'Main Gate', lat: 21.16737, lon: 72.78508 },
+    { name: 'Old Gate', lat: 21.16737, lon: 72.78508 },
+    { name: 'New Gate', xz: [-305.6, -368.8] },
   ],
 };

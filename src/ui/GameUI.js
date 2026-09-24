@@ -158,7 +158,12 @@ export class GameUI {
   }
 
   #landmarkBlurb(l) {
-    if (l.kind === 'gate') return 'The main entrance to the SVNIT campus, at Ichchhanath Circle on Dumas Road.';
+    if (l.kind === 'gate' && l.style === 'new') {
+      return 'The new entrance, opening onto the Dumas Road junction — a red name wall carrying the institute name in Hindi and English under the "SVNIT" letters, with the emblem on a red pillar.';
+    }
+    if (l.kind === 'gate') {
+      return 'The original entrance at Ichchhanath Circle — a red portal frame with the maroon name board, the national flag flying behind, and the Sardar Patel statue just inside.';
+    }
     if (l.kind === 'memorial') {
       return 'Statue of Sardar Vallabhbhai Patel, the "Iron Man of India", after whom the institute is named.';
     }
