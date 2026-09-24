@@ -152,13 +152,30 @@ export function buildCampus(overpassJson, opts = {}) {
   const curatedFor = (id, name) =>
     curated.buildings?.[id] ?? curated.buildings?.[nameKey(name)] ?? {};
 
+  // Generic identity for an unnamed footprint from curated.unnamedRules.
+  // An explicit OSM building type (apartments, house…) keeps its category.
+  const unnamedRuleFor = (ring, tags) => {
+    const [cx, cz] = ringCentroid(ring);
+    const area = ringArea(ring);
+    const rule = (curated.unnamedRules ?? []).find(
+      ({ box: [x0, z0, x1, z1], minArea = 0 }) =>
+        cx >= x0 && cx <= x1 && cz >= z0 && cz <= z1 && area >= minArea,
+    );
+    if (!rule) return {};
+    const tagged = classifyBuilding({ tags: tags ?? {} });
+    const category = tagged === 'utility' ? rule.category : tagged;
+    const floors = typeof rule.floors === 'function' ? rule.floors(area) : rule.floors;
+    return { name: rule.name, category, floors, generic: true };
+  };
+
   const buildings = [];
   const pushBuilding = (id, name, ringXZ, tags, levelsHint, curatedMeta) => {
     const ring = sanitizeFootprint(ringXZ);
     if (!ring) return; // degenerate
     if (!centroidInCampus(ring)) return;
 
-    const cur = curatedMeta ?? curatedFor(id, name);
+    let cur = curatedMeta ?? curatedFor(id, name);
+    if (!name && !cur.name) cur = { ...unnamedRuleFor(ring, tags), ...cur };
     const category = cur.category ?? classifyBuilding({ tags: tags ?? {}, name });
     const lvHint = cur.floors ?? levelsHint ?? Number(tags?.['building:levels']);
     const { height, levels } = estimateHeight(category, lvHint);
@@ -181,6 +198,7 @@ export function buildCampus(overpassJson, opts = {}) {
         accent: cur.accent ?? ACCENT_BY_CATEGORY[category] ?? '#888888',
         roof: cur.roof ?? (category === 'workshop' ? 'sawtooth' : 'flat'),
         hasInterior: Boolean(cur.hasInterior),
+        ...(cur.generic && { generic: true }),
       },
     });
   };
@@ -343,6 +361,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     gates: campus.gates.length,
   };
   console.log('campus.generated.json written:', JSON.stringify(counts));
-  const named = campus.buildings.filter((b) => !b.name.startsWith('(unnamed'));
+  const named = campus.buildings.filter((b) => !b.meta.generic && !b.name.startsWith('(unnamed'));
   console.log(`named buildings: ${named.length} / ${campus.buildings.length}`);
 }

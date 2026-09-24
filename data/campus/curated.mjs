@@ -250,6 +250,36 @@ export default {
 
   // Sports facilities — the OSM campus polygon omits the playing fields, so the
   // main grounds are placed by hand in the central open zone (local metres).
+  // Unnamed OSM footprints (tagged only `building=yes`) take a generic identity
+  // from where they stand. First matching rule wins; `box` is [minX, minZ,
+  // maxX, maxZ] in local metres (-z = north, +x = east); `minArea` in m².
+  // Generic buildings are labelled in-world but kept out of the directory.
+  unnamedRules: [
+    {
+      // regular grid of G+1 / G+2 blocks east of the canteen
+      name: 'Staff Quarters',
+      category: 'residence',
+      box: [140, -560, 440, -95],
+      minArea: 100,
+      floors: (area) => (area < 250 ? 2 : 3),
+    },
+    {
+      name: 'Staff Quarters',
+      category: 'residence',
+      box: [-560, 560, -420, 640],
+      minArea: 300,
+      floors: 2,
+    },
+    {
+      name: 'Academic Block',
+      category: 'academic',
+      box: [-320, -500, 150, 60],
+      minArea: 800,
+      floors: 3,
+    },
+    { name: 'Service Building', category: 'utility', box: [-1e4, -1e4, 1e4, 1e4], minArea: 0, floors: 1 },
+  ],
+
   extraGrounds: [
     { name: 'Athletics & Football Ground', sport: 'athletics', footprintXZ: ellipse(70, 60, 100, 66, 28) },
     { name: 'Cricket Ground', sport: 'cricket', footprintXZ: ellipse(370, 40, 95, 95, 28) },

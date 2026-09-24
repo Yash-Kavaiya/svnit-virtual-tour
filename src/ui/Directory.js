@@ -39,7 +39,7 @@ export class Directory {
     this.items = [
       ...campus.buildings.map((b) => ({ name: b.name, category: b.category, kind: 'building', ref: b })),
       ...landmarks.map((l) => ({ name: l.name, category: 'landmark', kind: 'landmark', ref: l })),
-    ].filter((i) => !i.name.startsWith('(unnamed'));
+    ].filter((i) => !i.name.startsWith('(unnamed') && !i.ref.meta?.generic);
 
     this.input = el('input', {
       type: 'search',

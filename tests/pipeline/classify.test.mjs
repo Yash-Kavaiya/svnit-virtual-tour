@@ -62,3 +62,11 @@ describe('estimateHeight', () => {
     expect(r.height).toBeGreaterThanOrEqual(7);
   });
 });
+
+describe('classifyBuilding residential tags', () => {
+  it('apartments / house footprints are residences', () => {
+    expect(classifyBuilding({ tags: { building: 'apartments' } })).toBe('residence');
+    expect(classifyBuilding({ tags: { building: 'house' } })).toBe('residence');
+    expect(classifyBuilding({ tags: { building: 'yes' } })).toBe('utility');
+  });
+});

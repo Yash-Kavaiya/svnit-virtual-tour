@@ -154,3 +154,51 @@ describe('buildCampus curated overlay', () => {
     expect(validateCampusData(campus).ok).toBe(true);
   });
 });
+
+describe('buildCampus unnamedRules', () => {
+  const unnamed = (id, tags) => ({
+    type: 'way',
+    id,
+    tags,
+    geometry: [
+      { lat: 21.1632, lon: 72.7856 },
+      { lat: 21.1632, lon: 72.7859 },
+      { lat: 21.1635, lon: 72.7859 },
+      { lat: 21.1635, lon: 72.7856 },
+    ],
+  });
+  const raw = {
+    elements: [
+      ...FIXTURE.elements,
+      unnamed(50, { building: 'yes' }),
+      unnamed(51, { building: 'apartments' }),
+    ],
+  };
+  const curated = {
+    ...EMPTY_CURATED,
+    unnamedRules: [
+      { name: 'Too Big', category: 'academic', box: [-1e4, -1e4, 1e4, 1e4], minArea: 1e6, floors: 9 },
+      { name: 'Staff Quarters', category: 'residence', box: [-1e4, -1e4, 1e4, 1e4], floors: (a) => (a > 100 ? 3 : 1) },
+    ],
+  };
+  const campus = buildCampus(raw, { curated });
+  const w50 = campus.buildings.find((b) => b.id === 'w50');
+
+  it('names an unnamed footprint from the first rule it satisfies', () => {
+    expect(w50.name).toBe('Staff Quarters');
+    expect(w50.category).toBe('residence');
+    expect(w50.levels).toBe(3); // ~1000 m² footprint, floors(area) callback
+    expect(w50.meta.generic).toBe(true);
+    expect(w50.meta.facade).toBe('residence');
+  });
+  it('leaves named buildings untouched', () => {
+    const mech = campus.buildings.find((b) => b.name.includes('Mechanical'));
+    expect(mech.meta.generic).toBeUndefined();
+    expect(mech.category).toBe('academic');
+  });
+  it('lets an explicit OSM building type win over the rule category', () => {
+    expect(classifyOf(campus, 'w51')).toBe('residence');
+  });
+});
+
+const classifyOf = (campus, id) => campus.buildings.find((b) => b.id === id).category;

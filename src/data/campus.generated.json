@@ -206,8 +206,8 @@
  "buildings": [
   {
    "id": "w1524565490",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      -506.82,
@@ -230,21 +230,22 @@
     -512.81,
     601.29
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -1.6731,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w1524565491",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      -486.77,
@@ -267,21 +268,22 @@
     -493.15,
     600.02
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 1.4828,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w1524565492",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      -467.67,
@@ -304,21 +306,22 @@
     -473.9,
     598.18
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -1.6455,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w1524565493",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      -447.64,
@@ -341,21 +344,22 @@
     -453.89,
     596.41
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 1.5024,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w1524565662",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      410.03,
@@ -378,20 +382,21 @@
     389.26,
     -442.27
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -0.1509,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w1524565663",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -455,7 +460,8 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
@@ -1217,7 +1223,7 @@
   },
   {
    "id": "w361364021",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -1253,12 +1259,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364022",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -1294,13 +1301,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364027",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      73.83,
@@ -1339,15 +1347,16 @@
     98.89,
     -483.27
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 2.6897,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
@@ -1390,8 +1399,8 @@
   },
   {
    "id": "w361364038",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      316.79,
@@ -1430,21 +1439,22 @@
     322.41,
     -109.86
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.4764,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364039",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      -209.07,
@@ -1499,21 +1509,22 @@
     -187.89,
     -310.44
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.1219,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364040",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      161.14,
@@ -1548,21 +1559,22 @@
     147.3,
     -331.33
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 2.6908,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364041",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      392.87,
@@ -1613,21 +1625,22 @@
     405.07,
     -163.17
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -1.6817,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364042",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      275.51,
@@ -1654,20 +1667,21 @@
     283.92,
     -352.24
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 1.1399,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364043",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -1731,13 +1745,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364044",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      200.63,
@@ -1796,21 +1811,22 @@
     206.36,
     -252.73
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -2.0214,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364045",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      255.97,
@@ -1857,15 +1873,16 @@
     261.94,
     -278.86
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 2.8202,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
@@ -1916,8 +1933,8 @@
   },
   {
    "id": "w361364047",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      314.12,
@@ -1964,21 +1981,22 @@
     323.41,
     -271.08
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -2.0179,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364048",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      279.8,
@@ -2033,21 +2051,22 @@
     289.87,
     -255
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -0.4464,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364049",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      253.24,
@@ -2082,21 +2101,22 @@
     264.06,
     -242.36
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 1.1242,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364050",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      197.56,
@@ -2131,21 +2151,22 @@
     208.38,
     -215.61
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 1.1244,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364051",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      223.86,
@@ -2200,21 +2221,22 @@
     233.95,
     -228.26
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -0.446,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364052",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      39.92,
@@ -2249,21 +2271,22 @@
     75.68,
     -213.01
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -2.4006,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364053",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      165.49,
@@ -2298,20 +2321,21 @@
     176.72,
     -275.91
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 0.9837,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364054",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -2363,13 +2387,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364055",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      255.35,
@@ -2428,21 +2453,22 @@
     253.16,
     -475.69
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -2.0214,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364056",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      194.87,
@@ -2477,21 +2503,22 @@
     205.01,
     -289.47
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.1401,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364057",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      221.77,
@@ -2530,21 +2557,22 @@
     232.55,
     -302.82
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.0316,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364058",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      211.26,
@@ -2603,21 +2631,22 @@
     225,
     -536.14
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -1.9477,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364059",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      263.28,
@@ -2680,21 +2709,22 @@
     261.61,
     -316.28
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.1629,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364060",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      353.13,
@@ -2757,20 +2787,21 @@
     353.2,
     -285.97
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 0.978,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364061",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -2810,12 +2841,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364062",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -2855,13 +2887,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364063",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      303.87,
@@ -2888,21 +2921,22 @@
     318.29,
     -409.15
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -0.4513,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364064",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      299.62,
@@ -2929,21 +2963,22 @@
     313.66,
     -445.03
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 2.737,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364065",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      294.21,
@@ -2970,21 +3005,22 @@
     308.62,
     -480.2
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -0.4511,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364066",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      317.16,
@@ -3047,21 +3083,22 @@
     303.02,
     -515.81
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.1665,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364067",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      -124.43,
@@ -3084,20 +3121,21 @@
     -92.67,
     -186.48
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 2.6796,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364068",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3129,12 +3167,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364069",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3166,12 +3205,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364071",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3203,13 +3243,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364072",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      249.36,
@@ -3232,20 +3273,21 @@
     255.96,
     -135.36
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -0.0276,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364073",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3277,13 +3319,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364075",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      226.12,
@@ -3306,21 +3349,22 @@
     238.74,
     -506.38
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.1116,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364077",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      270.1,
@@ -3343,15 +3387,16 @@
     280.45,
     -183.79
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": 3.0231,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
@@ -3394,8 +3439,8 @@
   },
   {
    "id": "w361364080",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      -102.66,
@@ -3418,21 +3463,22 @@
     -83.24,
     -111.84
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -2.0386,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364081",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      244.17,
@@ -3455,15 +3501,16 @@
     253.47,
     -418.47
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -2.032,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
@@ -3505,7 +3552,7 @@
   },
   {
    "id": "w361364085",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3537,13 +3584,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364086",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      262.11,
@@ -3566,21 +3614,22 @@
     269.62,
     -383.52
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 8,
+   "levels": 2,
    "orientation": -2.0159,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 2,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364087",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      -70.26,
@@ -3603,21 +3652,22 @@
     -46.04,
     -119.33
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -2.0359,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364090",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      -137.75,
@@ -3648,20 +3698,21 @@
     -99.61,
     49.18
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 2.7512,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364093",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3701,13 +3752,14 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364094",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      -253.77,
@@ -3730,20 +3782,21 @@
     -207.19,
     -344.87
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -0.4604,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364096",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3783,12 +3836,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364097",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3836,12 +3890,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364099",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3889,12 +3944,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364101",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3942,12 +3998,13 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w361364104",
-   "name": "(unnamed building)",
+   "name": "Service Building",
    "category": "utility",
    "footprint": [
     [
@@ -3995,7 +4052,8 @@
     "facade": "utility",
     "accent": "#7d7d7d",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
@@ -4433,8 +4491,8 @@
   },
   {
    "id": "w660166242",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Academic Block",
+   "category": "academic",
    "footprint": [
     [
      -310.78,
@@ -4473,21 +4531,22 @@
     -293.24,
     -300.03
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -0.4445,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "academic",
+    "accent": "#b06a3a",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w948609640",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      396.04,
@@ -4510,21 +4569,22 @@
     384.17,
     -381.12
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -1.8463,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w948609641",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      417.1,
@@ -4547,21 +4607,22 @@
     418.11,
     -390.59
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": 1.3597,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w948609642",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      428.32,
@@ -4584,21 +4645,22 @@
     429.39,
     -337.18
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -1.7848,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
    "id": "w948609643",
-   "name": "(unnamed building)",
-   "category": "utility",
+   "name": "Staff Quarters",
+   "category": "residence",
    "footprint": [
     [
      389.63,
@@ -4621,15 +4683,16 @@
     401.46,
     -320.02
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 11.4,
+   "levels": 3,
    "orientation": -1.8336,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 3,
+    "facade": "residence",
+    "accent": "#a98d5f",
     "roof": "flat",
-    "hasInterior": false
+    "hasInterior": false,
+    "generic": true
    }
   },
   {
