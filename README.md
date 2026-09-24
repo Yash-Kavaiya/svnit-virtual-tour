@@ -114,6 +114,15 @@ or endorsed by SVNIT. See [`CREDITS.md`](CREDITS.md).
 - More walk-in interiors
 - 360° photo nodes overlaid on the model
 
+## Deploy (CI/CD)
+
+- **CI** — `.github/workflows/ci.yml` runs lint, the Vitest suite and a
+  production build on every pull request and every push to `main`.
+- **CD** — the repo is connected to Vercel (`vercel.json`): every pull
+  request gets a preview deployment (link posted on the PR) and every push
+  to `main` deploys to production. Protect `main` with the `ci` check so
+  only green builds are merged and shipped.
+
 ## Author
 
 Created by **Yash Kavaiya** — [LinkedIn](https://www.linkedin.com/in/yashkavaiya) · [X](https://x.com/yashkavaiya)
