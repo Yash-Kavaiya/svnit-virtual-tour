@@ -41,3 +41,18 @@ describe('buildRoadRibbon', () => {
     expect(zs[3]).toBeCloseTo(2, 5);
   });
 });
+
+describe('buildKerbRuns', () => {
+  it('lines both edges and breaks at a crossing road', async () => {
+    const { buildKerbRuns } = await import('../../src/world/Roads.js');
+    const straight = [{ class: 'residential', width: 6, path: [[0, 0], [40, 0]] }];
+    const runs = buildKerbRuns(straight);
+    expect(runs).toHaveLength(2);
+    for (const run of runs) expect(Math.abs(Math.abs(run[0][1]) - 3.12)).toBeLessThan(1e-6);
+    const crossed = [...straight, { class: 'residential', width: 6, path: [[20, -30], [20, 30]] }];
+    const cut = buildKerbRuns(crossed).filter((r) => Math.abs(r[0][1]) < 4 && r.length > 2);
+    // each edge of the first road splits either side of the crossing
+    expect(cut.length).toBe(4);
+    for (const run of cut) for (const [x] of run) expect(Math.abs(x - 20)).toBeGreaterThan(3);
+  });
+});
