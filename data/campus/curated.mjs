@@ -161,6 +161,13 @@ export default {
     },
     // The SVNIT Canteen. OSM maps it as an unnamed building way here plus an
     // amenity=cafe node ("Canteen", @21.16438,72.78602) on top of it.
+    // the hand-placed Narmad box sat on this unnamed OSM footprint
+    w361364104: {
+      name: 'Narmad Bhavan (Girls Hostel)',
+      category: 'hostel',
+      floors: 5,
+      description: 'Girls hostel for all departments, named after the Gujarati poet Narmad.',
+    },
     w361364046: {
       name: 'SVNIT Canteen',
       category: 'dining',
@@ -172,21 +179,6 @@ export default {
   },
 
   extraBuildings: [
-    {
-      id: 'x-narmad',
-      name: 'Narmad Bhavan (Girls Hostel)',
-      category: 'hostel',
-      levels: 5,
-      footprintLatLon: [
-        { lat: 21.1594, lon: 72.787 },
-        { lat: 21.1594, lon: 72.7878 },
-        { lat: 21.1598, lon: 72.7878 },
-        { lat: 21.1598, lon: 72.787 },
-      ],
-      meta: {
-        description: 'Girls hostel for all departments, named after the Gujarati poet Narmad.',
-      },
-    },
     {
       id: 'x-nehru',
       name: 'Nehru Bhavan',
@@ -219,10 +211,10 @@ export default {
       category: 'admin',
       levels: 2,
       footprintLatLon: [
-        { lat: 21.1627, lon: 72.7845 },
-        { lat: 21.1627, lon: 72.7852 },
-        { lat: 21.163, lon: 72.7852 },
-        { lat: 21.163, lon: 72.7845 },
+        { lat: 21.1627, lon: 72.7841 },
+        { lat: 21.1627, lon: 72.7848 },
+        { lat: 21.163, lon: 72.7848 },
+        { lat: 21.163, lon: 72.7841 },
       ],
       meta: {
         description: 'The main auditorium / convocation hall for institute functions and cultural events.',
@@ -236,10 +228,10 @@ export default {
       category: 'sports',
       levels: 2,
       footprintLatLon: [
-        { lat: 21.1662, lon: 72.7842 },
-        { lat: 21.1662, lon: 72.7848 },
-        { lat: 21.1665, lon: 72.7848 },
-        { lat: 21.1665, lon: 72.7842 },
+        { lat: 21.1662, lon: 72.7843 },
+        { lat: 21.1662, lon: 72.7849 },
+        { lat: 21.1665, lon: 72.7849 },
+        { lat: 21.1665, lon: 72.7843 },
       ],
       meta: {
         description: 'Indoor games — table tennis, badminton, carrom, chess and the gymnasium.',
@@ -276,6 +268,14 @@ export default {
       box: [-320, -500, 150, 60],
       minArea: 800,
       floors: 3,
+    },
+    {
+      // large blocks among the named Bhavans south-east of the library
+      name: 'Hostel Block',
+      category: 'hostel',
+      box: [60, 0, 600, 620],
+      minArea: 1000,
+      floors: 5,
     },
     { name: 'Service Building', category: 'utility', box: [-1e4, -1e4, 1e4, 1e4], minArea: 0, floors: 1 },
   ],

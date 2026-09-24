@@ -3950,8 +3950,8 @@
   },
   {
    "id": "w361364101",
-   "name": "Service Building",
-   "category": "utility",
+   "name": "Hostel Block",
+   "category": "hostel",
    "footprint": [
     [
      97.27,
@@ -3990,13 +3990,13 @@
     121.25,
     408.64
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 18.2,
+   "levels": 5,
    "orientation": -0.6516,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 5,
+    "facade": "hostel",
+    "accent": "#6d7f52",
     "roof": "flat",
     "hasInterior": false,
     "generic": true
@@ -4004,8 +4004,8 @@
   },
   {
    "id": "w361364104",
-   "name": "Service Building",
-   "category": "utility",
+   "name": "Narmad Bhavan (Girls Hostel)",
+   "category": "hostel",
    "footprint": [
     [
      170.54,
@@ -4044,16 +4044,16 @@
     194.52,
     374.13
    ],
-   "height": 4.6,
-   "levels": 1,
+   "height": 18.2,
+   "levels": 5,
    "orientation": -0.5437,
    "meta": {
-    "floors": 1,
-    "facade": "utility",
-    "accent": "#7d7d7d",
+    "floors": 5,
+    "description": "Girls hostel for all departments, named after the Gujarati poet Narmad.",
+    "facade": "hostel",
+    "accent": "#6d7f52",
     "roof": "flat",
-    "hasInterior": false,
-    "generic": true
+    "hasInterior": false
    }
   },
   {
@@ -4701,24 +4701,24 @@
    "category": "admin",
    "footprint": [
     [
-     -62.84,
+     -104.37,
      -27.03
     ],
     [
-     9.82,
+     -31.7,
      -27.03
     ],
     [
-     9.82,
+     -31.7,
      6.37
     ],
     [
-     -62.84,
+     -104.37,
      6.37
     ]
    ],
    "centroid": [
-    -26.51,
+    -68.03,
     -10.33
    ],
    "height": 8,
@@ -4730,44 +4730,6 @@
     "facade": "admin",
     "accent": "#8a5a3b",
     "roof": "vault",
-    "hasInterior": false
-   }
-  },
-  {
-   "id": "x-narmad",
-   "name": "Narmad Bhavan (Girls Hostel)",
-   "category": "hostel",
-   "footprint": [
-    [
-     196.69,
-     329.19
-    ],
-    [
-     279.74,
-     329.19
-    ],
-    [
-     279.74,
-     373.72
-    ],
-    [
-     196.69,
-     373.72
-    ]
-   ],
-   "centroid": [
-    238.21,
-    351.46
-   ],
-   "height": 18.2,
-   "levels": 5,
-   "orientation": 0,
-   "meta": {
-    "floors": 5,
-    "description": "Girls hostel for all departments, named after the Gujarati poet Narmad.",
-    "facade": "hostel",
-    "accent": "#6d7f52",
-    "roof": "flat",
     "hasInterior": false
    }
   },
@@ -4815,24 +4777,24 @@
    "category": "sports",
    "footprint": [
     [
-     -93.99,
+     -83.61,
      -416.65
     ],
     [
-     -31.7,
+     -21.32,
      -416.65
     ],
     [
-     -31.7,
+     -21.32,
      -383.25
     ],
     [
-     -93.99,
+     -83.61,
      -383.25
     ]
    ],
    "centroid": [
-    -62.84,
+    -52.46,
     -399.95
    ],
    "height": 8,
