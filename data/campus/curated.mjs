@@ -14,8 +14,9 @@ export default {
       floors: 3,
       hasInterior: true,
       accent: '#b5451f',
+      // svnit.ac.in/web/library/collection.php, figures as on 31/05/2024
       description:
-        'One of the major technological libraries of western India, established 1968. Sits at the centre of campus and is among its most cared-for buildings.',
+        'Established 1968. Holds about 1.09 lakh print books, 11,500 e-books, 6,370 theses and dissertations and 15,800 standards, with access to 7,700+ online journals.',
     },
     'administration building': {
       category: 'admin',
@@ -74,36 +75,43 @@ export default {
     'computer engineering department': {
       category: 'academic',
       department: 'Computer Engineering (old block)',
+      established: 1988, // UG programme started 1988-89
       floors: 3,
     },
     'new computer engineering department': {
       category: 'academic',
       department: 'Computer Engineering',
+      established: 1988,
       floors: 4,
     },
     'old electronics engineering department': {
       category: 'academic',
       department: 'Electronics & Communication (old block)',
+      established: 1983, // UG programme started 1983-84
       floors: 2,
     },
     'new electronics engineering department': {
       category: 'academic',
       department: 'Electronics & Communication Engineering',
+      established: 1983,
       floors: 4,
     },
     'old chemical engineering department': {
       category: 'academic',
       department: 'Chemical Engineering (old block)',
+      established: 1995, // UG programme started 1995-96
       floors: 2,
     },
     'new chemical engineering department': {
       category: 'academic',
       department: 'Chemical Engineering',
+      established: 1995,
       floors: 4,
     },
     'production engineering department': {
       category: 'academic',
       department: 'Mechanical Engineering — Production wing',
+      established: 1988, // Production Engineering UG started 1988-89
       floors: 2,
     },
     'new m.sc. department': {

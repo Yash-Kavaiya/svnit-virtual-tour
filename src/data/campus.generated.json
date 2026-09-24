@@ -3778,6 +3778,7 @@
    "orientation": -0.4675,
    "meta": {
     "department": "Chemical Engineering (old block)",
+    "established": 1995,
     "floors": 2,
     "facade": "academic",
     "accent": "#b06a3a",
@@ -3824,6 +3825,7 @@
    "orientation": 2.7128,
    "meta": {
     "department": "Mechanical Engineering — Production wing",
+    "established": 1988,
     "floors": 2,
     "facade": "academic",
     "accent": "#b06a3a",
@@ -3942,6 +3944,7 @@
    "orientation": -0.4528,
    "meta": {
     "department": "Computer Engineering (old block)",
+    "established": 1988,
     "floors": 3,
     "facade": "academic",
     "accent": "#b06a3a",
@@ -3980,6 +3983,7 @@
    "orientation": 2.6922,
    "meta": {
     "department": "Electronics & Communication (old block)",
+    "established": 1983,
     "floors": 2,
     "facade": "academic",
     "accent": "#b06a3a",
@@ -9306,7 +9310,7 @@
    "meta": {
     "established": 1968,
     "floors": 3,
-    "description": "One of the major technological libraries of western India, established 1968. Sits at the centre of campus and is among its most cared-for buildings.",
+    "description": "Established 1968. Holds about 1.09 lakh print books, 11,500 e-books, 6,370 theses and dissertations and 15,800 standards, with access to 7,700+ online journals.",
     "facade": "library",
     "accent": "#b5451f",
     "roof": "flat",
@@ -9462,6 +9466,7 @@
    "orientation": -0.4488,
    "meta": {
     "department": "Chemical Engineering",
+    "established": 1995,
     "floors": 4,
     "facade": "academic",
     "accent": "#b06a3a",
@@ -9575,6 +9580,7 @@
    "orientation": -0.4708,
    "meta": {
     "department": "Electronics & Communication Engineering",
+    "established": 1983,
     "floors": 4,
     "facade": "academic",
     "accent": "#b06a3a",
@@ -9613,6 +9619,7 @@
    "orientation": -0.4412,
    "meta": {
     "department": "Computer Engineering",
+    "established": 1988,
     "floors": 4,
     "facade": "academic",
     "accent": "#b06a3a",
