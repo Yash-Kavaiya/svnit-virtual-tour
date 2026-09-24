@@ -1,5 +1,7 @@
 # Credits
 
+Created by **Yash Kavaiya** — [LinkedIn](https://www.linkedin.com/in/yashkavaiya) · [X](https://x.com/yashkavaiya)
+
 ## Campus geometry
 
 The campus boundary, building footprints, internal road network and water

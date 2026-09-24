@@ -112,3 +112,7 @@ or endorsed by SVNIT. See [`CREDITS.md`](CREDITS.md).
 - WebXR / VR mode
 - More walk-in interiors
 - 360° photo nodes overlaid on the model
+
+## Author
+
+Created by **Yash Kavaiya** — [LinkedIn](https://www.linkedin.com/in/yashkavaiya) · [X](https://x.com/yashkavaiya)

@@ -238,8 +238,9 @@ function buildOldGate({ g, w, red, redDark, coping, box, text }) {
     text(NAME_EN, { size: 0.38, x: 0, y: 4.72, z, back, maxWidth: span - 1 });
     text('SURAT  ·  ESTD. 1961', { size: 0.24, x: 0, y: 4.25, z, back, color: '#e8c872' });
   }
-  // the national flag on a tall mast just behind the gate
-  g.add(makeFlagpole(0.8, 16));
+  // the national flag on a tall mast just behind the gate, on the verge
+  // clear of the carriageway (opposite the guard cabin)
+  g.add(makeFlagpole(w / 2 + 6, 9));
 }
 
 // New gate: long red name wall with "SVNIT" letters, emblem pillar, sliding gates.
