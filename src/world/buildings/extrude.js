@@ -32,14 +32,15 @@ export function extrudeFootprint(ring, height, opts = {}) {
 
     const y0 = 0;
     const y1 = height;
-    // two triangles: (a,y0)-(b,y0)-(b,y1) and (a,y0)-(b,y1)-(a,y1)
+    // two triangles, counter-clockwise seen from outside (along +normal):
+    // (a,y0)-(b,y1)-(b,y0) and (a,y0)-(a,y1)-(b,y1)
     const p = [
       [a[0], y0, a[1], u0, 0],
+      [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
       [b[0], y0, b[1], u1, 0],
-      [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
       [a[0], y0, a[1], u0, 0],
-      [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
       [a[0], y1, a[1], u0, height / LEVEL_HEIGHT],
+      [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
     ];
     for (const [x, y, z, u, v] of p) {
       positions.push(x, y, z);

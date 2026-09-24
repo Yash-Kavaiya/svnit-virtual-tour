@@ -33,6 +33,26 @@ describe('extrudeFootprint', () => {
     expect(covered).toBe(total); // every vertex belongs to exactly one group
   });
 
+  it('winds wall triangles to face along their outward normals', () => {
+    for (const ring of [RECT, [...RECT].reverse()]) {
+      const g = extrudeFootprint(ring, 10);
+      const walls = g.groups.find((gr) => gr.materialIndex === 0);
+      const p = g.getAttribute('position');
+      const n = g.getAttribute('normal');
+      for (let i = walls.start; i < walls.start + walls.count; i += 3) {
+        const u = [p.getX(i + 1) - p.getX(i), p.getY(i + 1) - p.getY(i), p.getZ(i + 1) - p.getZ(i)];
+        const v = [p.getX(i + 2) - p.getX(i), p.getY(i + 2) - p.getY(i), p.getZ(i + 2) - p.getZ(i)];
+        const gx = u[1] * v[2] - u[2] * v[1];
+        const gz = u[0] * v[1] - u[1] * v[0];
+        expect(gx * n.getX(i) + gz * n.getZ(i)).toBeGreaterThan(0);
+        // and that normal points out of the footprint (RECT centre is 10,5)
+        const mx = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3;
+        const mz = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3;
+        expect((mx - 10) * n.getX(i) + (mz - 5) * n.getZ(i)).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it('winds every roof-cap triangle to face up, whatever the input winding', () => {
     for (const ring of [RECT, [...RECT].reverse()]) {
       const g = extrudeFootprint(ring, 10);
