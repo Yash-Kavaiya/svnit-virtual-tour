@@ -8,11 +8,22 @@ const campus = JSON.parse(
 
 // Grid-sampled overlap area (m²) of footprint b inside footprint a.
 function overlapArea(a, b, step = 1.5) {
-  const xs = a.map((p) => p[0]);
-  const zs = a.map((p) => p[1]);
+  const bb = (r) => [
+    Math.min(...r.map((p) => p[0])),
+    Math.min(...r.map((p) => p[1])),
+    Math.max(...r.map((p) => p[0])),
+    Math.max(...r.map((p) => p[1])),
+  ];
+  const [ax0, az0, ax1, az1] = bb(a);
+  const [bx0, bz0, bx1, bz1] = bb(b);
+  // sample only where the two bounding boxes intersect
+  const x0 = Math.max(ax0, bx0);
+  const x1 = Math.min(ax1, bx1);
+  const z0 = Math.max(az0, bz0);
+  const z1 = Math.min(az1, bz1);
   let hits = 0;
-  for (let x = Math.min(...xs); x <= Math.max(...xs); x += step) {
-    for (let z = Math.min(...zs); z <= Math.max(...zs); z += step) {
+  for (let x = x0; x <= x1; x += step) {
+    for (let z = z0; z <= z1; z += step) {
       if (pointInRing([x, z], a) && pointInRing([x, z], b)) hits++;
     }
   }

@@ -83,7 +83,7 @@ export const TOUR_STOPS = [
     title: 'Sports Complex',
     target: { poi: 'Sports Complex' },
     narration:
-      'The sports zone has a cricket ground, an athletics and football field, hockey, and courts for basketball, volleyball and tennis, with an indoor games hall at the Students Activity Centre.',
+      'At the heart of the campus lies the vast student activity ground — some twelve hectares of open field — with basketball and tennis courts beside it, and table tennis and badminton indoors at the Student Activity Centre.',
     dwell: 5,
     height: 16,
   },

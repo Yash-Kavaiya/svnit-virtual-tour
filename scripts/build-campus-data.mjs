@@ -293,6 +293,14 @@ export function buildCampus(overpassJson, opts = {}) {
     });
   };
 
+  // An indoor sports centre mapped only as a leisure area is still a building.
+  for (const gr of parsed.grounds ?? []) {
+    if (gr.tags?.leisure !== 'sports_centre' || !/table_tennis|badminton|squash|gym/.test(gr.tags.sport ?? '')) continue;
+    pushBuilding(gr.id, gr.name, gr.geometry.map((p) => proj.toXZ(p)), gr.tags, 2, {
+      ...curatedFor(gr.id, gr.name),
+      category: 'sports',
+    });
+  }
   for (const b of parsed.buildings) {
     pushBuilding(
       b.id,

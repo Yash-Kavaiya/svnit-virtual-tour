@@ -188,6 +188,12 @@ export default {
     // The SVNIT Canteen. OSM maps it as an unnamed building way here plus an
     // amenity=cafe node ("Canteen", @21.16438,72.78602) on top of it.
     // unnamed footprint holding OSM's 'State Bank of India' ATM node
+    'student activity center': {
+      name: 'Student Activity Centre',
+      floors: 2,
+      accent: '#4f8a5b',
+      description: 'Indoor sports centre — table tennis and badminton (per OpenStreetMap).',
+    },
     w361364027: {
       floors: 2,
       accent: '#22409a',
@@ -206,26 +212,8 @@ export default {
   extraBuildings: [
     // (no 'Gajjar Auditorium': SVNIT holds convocations off campus at the
     // VNSGU Convention Hall, and no source shows an on-campus auditorium)
-    {
-      id: 'x-sac',
-      name: 'Students Activity Centre',
-      category: 'sports',
-      levels: 2,
-      footprintLatLon: [
-        { lat: 21.1662, lon: 72.7843 },
-        { lat: 21.1662, lon: 72.7849 },
-        { lat: 21.1665, lon: 72.7849 },
-        { lat: 21.1665, lon: 72.7843 },
-      ],
-      meta: {
-        description: 'Indoor games — table tennis, badminton, carrom, chess and the gymnasium.',
-        accent: '#4f8a5b',
-      },
-    },
   ],
 
-  // Sports facilities — the OSM campus polygon omits the playing fields, so the
-  // main grounds are placed by hand in the central open zone (local metres).
   // Unnamed OSM footprints (tagged only `building=yes`) take a generic identity
   // from where they stand. First matching rule wins; `box` is [minX, minZ,
   // maxX, maxZ] in local metres (-z = north, +x = east); `minArea` in m².
@@ -264,12 +252,9 @@ export default {
     { name: 'Service Building', category: 'utility', box: [-1e4, -1e4, 1e4, 1e4], minArea: 0, floors: 1 },
   ],
 
-  extraGrounds: [
-    { name: 'Athletics & Football Ground', sport: 'athletics', footprintXZ: ellipse(70, 60, 100, 66, 28) },
-    { name: 'Cricket Ground', sport: 'cricket', footprintXZ: ellipse(370, 40, 95, 95, 28) },
-    { name: 'Hockey Ground', sport: 'field_hockey', footprintXZ: rect(150, 200, 92, 55) },
-    { name: 'Volleyball Courts', sport: 'volleyball', footprintXZ: rect(-40, 150, 36, 20) },
-  ],
+  // No invented grounds: OSM maps the 12 ha Student activity ground, the
+  // basketball and tennis courts; pitch layouts inside it are unknown.
+  extraGrounds: [],
 
   // No invented water: OSM maps none inside the campus.
   extraWater: [],
