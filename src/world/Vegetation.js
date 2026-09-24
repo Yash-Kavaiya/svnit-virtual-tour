@@ -75,6 +75,7 @@ export function createVegetation(campus, registry) {
   const HERO = new Set(['library', 'admin', 'auditorium']);
   const buildingRings = buildings.map((b) => ({
     ring: b.footprint,
+    holes: b.holes ?? [],
     pad: HERO.has(b.category) ? 15 : 6.5,
   }));
   const waterRings = (water ?? []).map((w) => w.polygon);
@@ -86,7 +87,15 @@ export function createVegetation(campus, registry) {
 
   const reject = (x, z) => {
     for (const s of spawnSpots) if (Math.hypot(x - s[0], z - s[1]) < 14) return true;
-    for (const { ring, pad } of buildingRings) {
+    for (const { ring, holes, pad } of buildingRings) {
+      const court = holes.find((h) => pointInRing([x, z], h));
+      if (court) {
+        // a courtyard garden: fine, if clear of the courtyard walls
+        for (let i = 0; i < court.length; i++) {
+          if (distToSeg(x, z, court[i], court[(i + 1) % court.length]) < 4.5) return true;
+        }
+        continue;
+      }
       if (pointInRing([x, z], ring)) return true;
       for (let i = 0; i < ring.length; i++) {
         if (distToSeg(x, z, ring[i], ring[(i + 1) % ring.length]) < pad) return true;

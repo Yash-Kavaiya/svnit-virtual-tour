@@ -7,58 +7,64 @@ const LEVEL_HEIGHT = 3.4;
 // Non-indexed BufferGeometry with explicit normals for crisp wall shading.
 export function extrudeFootprint(ring, height, opts = {}) {
   const r = ensureWinding(ring, true);
-  const n = r.length;
+  // courtyards wind clockwise, so the same edge normal points into the court
+  const holes = (opts.holes ?? []).map((h) => ensureWinding(h, false));
   const plinth = opts.plinthHeight ?? 0;
 
   const positions = [];
   const normals = [];
   const uvs = [];
 
-  // Walls
+  // Walls: outer ring, then each courtyard
   const wallVertStart = 0;
-  let perim = 0;
-  for (let i = 0; i < n; i++) {
-    const a = r[i];
-    const b = r[(i + 1) % n];
-    const ex = b[0] - a[0];
-    const ez = b[1] - a[1];
-    const len = Math.hypot(ex, ez) || 1e-6;
-    // outward normal for CCW ring (in x/z), viewed from +Y down: (ez, -ex)/len
-    const nx = ez / len;
-    const nz = -ex / len;
-    const u0 = perim / 4;
-    const u1 = (perim + len) / 4;
-    perim += len;
+  for (const loop of [r, ...holes]) {
+    const n = loop.length;
+    let perim = 0;
+    for (let i = 0; i < n; i++) {
+      const a = loop[i];
+      const b = loop[(i + 1) % n];
+      const ex = b[0] - a[0];
+      const ez = b[1] - a[1];
+      const len = Math.hypot(ex, ez) || 1e-6;
+      // outward normal for CCW ring (in x/z), viewed from +Y down: (ez, -ex)/len
+      const nx = ez / len;
+      const nz = -ex / len;
+      const u0 = perim / 4;
+      const u1 = (perim + len) / 4;
+      perim += len;
 
-    const y0 = 0;
-    const y1 = height;
-    // two triangles, counter-clockwise seen from outside (along +normal):
-    // (a,y0)-(b,y1)-(b,y0) and (a,y0)-(a,y1)-(b,y1)
-    const p = [
-      [a[0], y0, a[1], u0, 0],
-      [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
-      [b[0], y0, b[1], u1, 0],
-      [a[0], y0, a[1], u0, 0],
-      [a[0], y1, a[1], u0, height / LEVEL_HEIGHT],
-      [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
-    ];
-    for (const [x, y, z, u, v] of p) {
-      positions.push(x, y, z);
-      normals.push(nx, 0, nz);
-      uvs.push(u, v);
+      const y0 = 0;
+      const y1 = height;
+      // two triangles, counter-clockwise seen from outside (along +normal):
+      // (a,y0)-(b,y1)-(b,y0) and (a,y0)-(a,y1)-(b,y1)
+      const p = [
+        [a[0], y0, a[1], u0, 0],
+        [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
+        [b[0], y0, b[1], u1, 0],
+        [a[0], y0, a[1], u0, 0],
+        [a[0], y1, a[1], u0, height / LEVEL_HEIGHT],
+        [b[0], y1, b[1], u1, height / LEVEL_HEIGHT],
+      ];
+      for (const [x, y, z, u, v] of p) {
+        positions.push(x, y, z);
+        normals.push(nx, 0, nz);
+        uvs.push(u, v);
+      }
     }
   }
 
   const wallVertCount = positions.length / 3 - wallVertStart;
 
-  // Cap (roof slab). Try earcut; fall back to a centroid fan if it fails or
-  // returns nothing (defensive — the pipeline already convex-cleans footprints).
+  // Cap (roof slab), open over courtyards. Try earcut; fall back to a centroid
+  // fan (outer ring only) if it fails or returns nothing.
   const capVertStart = positions.length / 3;
   const contour = r.map(([x, z]) => new THREE.Vector2(x, z));
+  const holeContours = holes.map((h) => h.map(([x, z]) => new THREE.Vector2(x, z)));
+  const allPts = contour.concat(...holeContours);
   const [cx, cz] = ringCentroid(r);
   let tris;
   try {
-    tris = THREE.ShapeUtils.triangulateShape(contour, []) ?? [];
+    tris = THREE.ShapeUtils.triangulateShape(contour, holeContours) ?? [];
   } catch {
     tris = [];
   }
@@ -66,12 +72,12 @@ export function extrudeFootprint(ring, height, opts = {}) {
     for (const [i0, i1, i2] of tris) {
       // earcut winds in the x/y plane; mapped onto x/z that can face down and
       // get back-face culled (roofs vanished from above). Force +Y facing.
-      const a = contour[i0];
-      const b = contour[i1];
-      const c = contour[i2];
+      const a = allPts[i0];
+      const b = allPts[i1];
+      const c = allPts[i2];
       const up = (b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - a.y) > 0;
       for (const idx of up ? [i0, i1, i2] : [i0, i2, i1]) {
-        const v = contour[idx];
+        const v = allPts[idx];
         positions.push(v.x, height, v.y);
         normals.push(0, 1, 0);
         uvs.push((v.x - cx) / 20, (v.y - cz) / 20);

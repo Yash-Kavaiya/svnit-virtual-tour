@@ -60,7 +60,8 @@ export function createBuildings(campus, registry) {
 
     // ---- FULL: shell + 3D detail + plinth + roof clutter + entrance
     const full = new THREE.Group();
-    const shell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), [facade, roofSlabMat]);
+    const holes = b.holes ?? [];
+    const shell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height, { holes }), [facade, roofSlabMat]);
     shell.castShadow = true;
     shell.receiveShadow = true;
     full.add(shell);
@@ -75,11 +76,25 @@ export function createBuildings(campus, registry) {
       }),
     );
 
-    const plinthGeo = buildPlinth(b.footprint);
-    if (plinthGeo) {
+    for (const [ring, court] of [[b.footprint, false], ...holes.map((h) => [h, true])]) {
+      const plinthGeo = buildPlinth(ring, court);
+      if (!plinthGeo) continue;
       const plinth = new THREE.Mesh(plinthGeo, plinthMat);
       plinth.receiveShadow = true;
       full.add(plinth);
+    }
+    // courtyard facades get the same sunshades, bands and parapet
+    for (const h of holes) {
+      full.add(
+        buildFacadeDetail(h, b.height, b.levels, {
+          concreteMat,
+          accentMat,
+          trimMat,
+          copingMat: trimMat,
+          accent: b.meta.accent,
+          courtyard: true,
+        }),
+      );
     }
 
 
@@ -112,10 +127,13 @@ export function createBuildings(campus, registry) {
 
     // ---- MID: same facade material + roof crown only (no chajjas/clutter)
     const mid = new THREE.Group();
-    const midShell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height), [facade, roofSlabMat]);
+    const midShell = new THREE.Mesh(extrudeFootprint(b.footprint, b.height, { holes }), [facade, roofSlabMat]);
     midShell.castShadow = true;
     mid.add(midShell);
     mid.add(buildRoofCrown(b.footprint, b.height, { concreteMat, copingMat: trimMat }));
+    for (const h of holes) {
+      mid.add(buildRoofCrown(h, b.height, { concreteMat, copingMat: trimMat, courtyard: true }));
+    }
 
     // ---- non-rendering raycast proxy
     const pick = new THREE.Mesh(
@@ -132,6 +150,7 @@ export function createBuildings(campus, registry) {
     // at every distance; collected here and merged campus-wide below
     populateRoof(roofScratch, {
       footprint: b.footprint,
+      holes,
       height: b.height,
       category: b.category,
       seed,

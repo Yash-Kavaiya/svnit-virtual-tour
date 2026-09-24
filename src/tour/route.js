@@ -92,7 +92,7 @@ export const TOUR_STOPS = [
     title: 'Hostel Zone',
     target: { poi: 'Hostel Zone' },
     narration:
-      'Students live in the residential zone — hostels named for Gajjar, Bhabha, Tagore, Raman, Swami Vivekananda, Nehru and Sarabhai for the men, and Narmad Bhavan for the women, plus the institute guest house.',
+      'SVNIT is fully residential: ten hostels house over 5,000 students — seven for men (Gajjar, Bhabha, Tagore, Nehru, Swami Vivekanand, Sarabhai and Atal Bihari Vajpayee Bhavan), Mother Teresa and Narmad Bhavan for women, and Raman Bhavan for married scholars.',
     dwell: 6,
     height: 14,
   },

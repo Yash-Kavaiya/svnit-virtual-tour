@@ -199,3 +199,55 @@ export function longestEdgeAngle(ring) {
   }
   return Math.atan2(Math.sin(angle), Math.cos(angle));
 }
+
+// Proper crossing of segments ab and cd (touching at endpoints doesn't count).
+function segmentsCross(a, b, c, d) {
+  const o = (p, q, r) => Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+  const o1 = o(a, b, c);
+  const o2 = o(a, b, d);
+  const o3 = o(c, d, a);
+  const o4 = o(c, d, b);
+  return o1 * o2 < 0 && o3 * o4 < 0;
+}
+
+// True when no two non-adjacent edges of the ring cross.
+export function isSimpleRing(ring) {
+  const n = ring.length;
+  if (n < 3) return false;
+  for (let i = 0; i < n; i++) {
+    const a = ring[i];
+    const b = ring[(i + 1) % n];
+    for (let j = i + 2; j < n; j++) {
+      if (i === 0 && j === n - 1) continue; // shares vertex 0
+      if (segmentsCross(a, b, ring[j], ring[(j + 1) % n])) return false;
+    }
+  }
+  return true;
+}
+
+// Join open polylines (multipolygon member ways) end-to-end into closed rings.
+// Points are compared with `eq`; returns rings without the repeated closing
+// point. Polylines that never close are dropped.
+export function stitchRings(lines, eq = (p, q) => p[0] === q[0] && p[1] === q[1]) {
+  const pool = lines.filter((l) => l.length >= 2).map((l) => [...l]);
+  const rings = [];
+  while (pool.length) {
+    let ring = pool.shift();
+    let grew = true;
+    while (!eq(ring[0], ring[ring.length - 1]) && grew) {
+      grew = false;
+      const tail = ring[ring.length - 1];
+      for (let i = 0; i < pool.length; i++) {
+        const l = pool[i];
+        if (eq(l[0], tail)) ring = ring.concat(l.slice(1));
+        else if (eq(l[l.length - 1], tail)) ring = ring.concat([...l].reverse().slice(1));
+        else continue;
+        pool.splice(i, 1);
+        grew = true;
+        break;
+      }
+    }
+    if (ring.length >= 4 && eq(ring[0], ring[ring.length - 1])) rings.push(ring.slice(0, -1));
+  }
+  return rings;
+}

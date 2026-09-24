@@ -156,22 +156,22 @@ describe('buildCampus curated overlay', () => {
 });
 
 describe('buildCampus unnamedRules', () => {
-  const unnamed = (id, tags) => ({
+  const unnamed = (id, tags, dLon = 0) => ({
     type: 'way',
     id,
     tags,
     geometry: [
-      { lat: 21.1632, lon: 72.7856 },
-      { lat: 21.1632, lon: 72.7859 },
-      { lat: 21.1635, lon: 72.7859 },
-      { lat: 21.1635, lon: 72.7856 },
+      { lat: 21.1632, lon: 72.7856 + dLon },
+      { lat: 21.1632, lon: 72.7859 + dLon },
+      { lat: 21.1635, lon: 72.7859 + dLon },
+      { lat: 21.1635, lon: 72.7856 + dLon },
     ],
   });
   const raw = {
     elements: [
       ...FIXTURE.elements,
       unnamed(50, { building: 'yes' }),
-      unnamed(51, { building: 'apartments' }),
+      unnamed(51, { building: 'apartments' }, 0.001),
     ],
   };
   const curated = {
@@ -227,5 +227,41 @@ describe('buildCampus names a footprint from the POI inside it', () => {
     expect(b.name).toBe('State Bank of India');
     expect(b.category).toBe('amenity');
     expect(b.meta.generic).toBeUndefined();
+  });
+});
+
+describe('buildCampus multipolygons and duplicates', () => {
+  const ring = (lat, lon, d) => [
+    { lat, lon },
+    { lat, lon: lon + d },
+    { lat: lat + d, lon: lon + d },
+    { lat: lat + d, lon },
+    { lat, lon },
+  ];
+  const raw = {
+    elements: [
+      ...FIXTURE.elements,
+      // old simple way for a hostel...
+      { type: 'way', id: 70, tags: { building: 'yes', name: 'Tagore Bhavan' }, geometry: ring(21.1632, 72.7856, 0.0006) },
+      // ...and the newer detailed multipolygon of the same building, with a courtyard
+      {
+        type: 'relation',
+        id: 71,
+        tags: { building: 'yes', type: 'multipolygon' },
+        members: [
+          { type: 'way', role: 'outer', geometry: ring(21.1632, 72.7856, 0.0006) },
+          { type: 'way', role: 'inner', geometry: ring(21.1634, 72.7858, 0.0002) },
+        ],
+      },
+    ],
+  };
+  const campus = buildCampus(raw, { curated: EMPTY_CURATED });
+  it('keeps the detailed multipolygon, with its courtyard and the old name', () => {
+    expect(campus.buildings.find((b) => b.id === 'w70')).toBeUndefined();
+    const r = campus.buildings.find((b) => b.id === 'r71');
+    expect(r.name).toBe('Tagore Bhavan');
+    expect(r.category).toBe('hostel');
+    expect(r.holes).toHaveLength(1);
+    expect(validateCampusData(campus).ok).toBe(true);
   });
 });

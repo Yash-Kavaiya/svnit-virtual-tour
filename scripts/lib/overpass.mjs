@@ -1,6 +1,36 @@
+import { stitchRings, pointInRing } from '../../src/shared/polygon.mjs';
 // Turn a raw Overpass JSON export into typed feature lists (still in lat/lon).
 
 const isClosed = (g) => Array.isArray(g) && g.length >= 4;
+
+const llEq = (p, q) => Math.abs(p.lat - q.lat) < 1e-9 && Math.abs(p.lon - q.lon) < 1e-9;
+const llArea = (r) => {
+  let a = 0;
+  for (let i = 0; i < r.length; i++) {
+    const p = r[i];
+    const q = r[(i + 1) % r.length];
+    a += p.lon * q.lat - q.lon * p.lat;
+  }
+  return Math.abs(a / 2);
+};
+const close = (r) => [...r, r[0]];
+
+// Stitch a multipolygon's member ways (Overpass `out geom`) into its largest
+// outer ring and the inner rings that sit inside it, all closed, in lat/lon.
+function relationRings(members) {
+  const lines = (role) =>
+    members
+      .filter((m) => m.type === 'way' && (m.role || 'outer') === role && Array.isArray(m.geometry))
+      .map((m) => m.geometry.map((p) => ({ lat: p.lat, lon: p.lon })));
+  const outers = stitchRings(lines('outer'), llEq);
+  if (!outers.length) return null;
+  const outer = outers.reduce((a, b) => (llArea(b) > llArea(a) ? b : a));
+  const toXY = (p) => [p.lon, p.lat];
+  const holes = stitchRings(lines('inner'), llEq).filter((h) =>
+    pointInRing(toXY(h[0]), outer.map(toXY)),
+  );
+  return { outer: close(outer), holes: holes.map(close) };
+}
 
 const geomOf = (e) => {
   if (Array.isArray(e.geometry)) return e.geometry.map((p) => ({ lat: p.lat, lon: p.lon }));
@@ -36,6 +66,13 @@ export function parseOverpass(json) {
     const t = e.tags ?? {};
     const g = geomOf(e);
     const f = { id: `${e.type[0]}${e.id}`, tags: t, geometry: g, name: t.name };
+
+    // multipolygon building: largest outer ring + inner rings (courtyards)
+    if (e.type === 'relation' && t.building && Array.isArray(e.members)) {
+      const mp = relationRings(e.members);
+      if (mp) out.buildings.push({ ...f, geometry: mp.outer, holes: mp.holes });
+      continue;
+    }
 
     if (t.building && isClosed(g)) {
       out.buildings.push(f);

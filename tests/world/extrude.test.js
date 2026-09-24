@@ -99,3 +99,39 @@ describe('mergeByMaterial', () => {
     expect(ma.geometry.boundingBox.max.x).toBeCloseTo(10.5, 5);
   });
 });
+
+describe('extrudeFootprint courtyards', () => {
+  const OUTER = [[0, 0], [30, 0], [30, 30], [0, 30]];
+  const HOLE = [[10, 10], [10, 20], [20, 20], [20, 10]];
+  it('adds courtyard walls facing into the courtyard and leaves the roof open over it', async () => {
+    const { pointInRing } = await import('../../src/shared/polygon.mjs');
+    const g = extrudeFootprint(OUTER, 10, { holes: [HOLE] });
+    const p = g.getAttribute('position');
+    const n = g.getAttribute('normal');
+    const walls = g.groups.find((gr) => gr.materialIndex === 0);
+    let courtyardWalls = 0;
+    for (let i = walls.start; i < walls.start + walls.count; i += 3) {
+      const mx = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3;
+      const mz = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3;
+      if (mx > 9 && mx < 21 && mz > 9 && mz < 21) {
+        courtyardWalls++;
+        // normal points toward the courtyard centre (15, 15)
+        expect((15 - mx) * n.getX(i) + (15 - mz) * n.getZ(i)).toBeGreaterThan(0);
+      }
+    }
+    expect(courtyardWalls).toBe(8); // 4 edges x 2 triangles
+    const cap = g.groups.find((gr) => gr.materialIndex === 1);
+    let area = 0;
+    for (let i = cap.start; i < cap.start + cap.count; i += 3) {
+      const ux = p.getX(i + 1) - p.getX(i);
+      const uz = p.getZ(i + 1) - p.getZ(i);
+      const vx = p.getX(i + 2) - p.getX(i);
+      const vz = p.getZ(i + 2) - p.getZ(i);
+      area += (uz * vx - ux * vz) / 2;
+      const cx = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3;
+      const cz = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3;
+      expect(pointInRing([cx, cz], HOLE)).toBe(false);
+    }
+    expect(area).toBeCloseTo(900 - 100, 3);
+  });
+});

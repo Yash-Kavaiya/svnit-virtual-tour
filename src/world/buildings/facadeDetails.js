@@ -41,7 +41,8 @@ function mergeOrNull(geos) {
 // an overhanging roof cornice and a solid parapet with a coping.
 // Returns a THREE.Group of a few merged meshes (cheap to draw).
 export function buildFacadeDetail(footprint, height, levels, opts = {}) {
-  const ring = ensureWinding(footprint, true);
+  // courtyard rings wind clockwise so every edge normal faces into the court
+  const ring = ensureWinding(footprint, !opts.courtyard);
   const n = ring.length;
   const group = new THREE.Group();
   group.name = 'facade-detail';
@@ -138,7 +139,7 @@ function wrapMesh(geo, mat) {
 }
 
 export function buildRoofCrown(footprint, height, opts = {}) {
-  const ring = ensureWinding(footprint, true);
+  const ring = ensureWinding(footprint, !opts.courtyard);
   const g = new THREE.Group();
   g.name = 'roof-crown';
 
@@ -172,8 +173,8 @@ export function buildRoofCrown(footprint, height, opts = {}) {
 
 // A thin paved skirt around the building base (footprint pushed out `inset` m),
 // sitting a hair above the lawn.
-export function buildApron(footprint, inset = 2.4) {
-  const ring = ensureWinding(footprint, true);
+export function buildApron(footprint, inset = 2.4, courtyard = false) {
+  const ring = ensureWinding(footprint, !courtyard);
   const geos = [];
   const n = ring.length;
   for (let e = 0; e < n; e++) {
@@ -190,8 +191,8 @@ export function buildApron(footprint, inset = 2.4) {
   return mergeOrNull(geos);
 }
 
-export function buildPlinth(footprint) {
-  const ring = ensureWinding(footprint, true);
+export function buildPlinth(footprint, courtyard = false) {
+  const ring = ensureWinding(footprint, !courtyard);
   const geos = [];
   const n = ring.length;
   for (let e = 0; e < n; e++) {

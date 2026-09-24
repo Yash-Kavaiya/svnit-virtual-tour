@@ -14,6 +14,7 @@ import {
   convexHull,
   orientedBox,
   clampOrientedBox,
+  isSimpleRing,
 } from '../src/shared/polygon.mjs';
 import { validateCampusData } from '../src/data/schema.mjs';
 
@@ -96,9 +97,86 @@ function bboxSides(ring) {
   return [maxX - minX, maxZ - minZ];
 }
 
-// Clean noisy / concave / hollow OSM footprints into convex prisms that
-// extrude without triangulation artifacts. Courtyard detail is traded for
-// robustness, which the spec permits for v1.
+// Keep the real OSM outline (concave wings, L/U shapes) whenever it is a
+// valid simple polygon after light simplification; only broken geometry
+// falls back to the convex clean-up below.
+function footprintShape(ring) {
+  const r = simplifyRing(ensureWinding(dedupeRing(ring), true), 0.5);
+  if (r.length >= 3 && Math.abs(ringArea(r)) >= 20 && isSimpleRing(r)) return r;
+  return sanitizeFootprint(ring);
+}
+
+// Courtyards: inner rings kept when valid, >= 25 m², and wholly inside the
+// outer ring. Wound clockwise (the opposite of the outer ring).
+function courtyardRings(holes, outer) {
+  return (holes ?? [])
+    .map((h) => simplifyRing(ensureWinding(dedupeRing(h), false), 0.5))
+    .filter(
+      (h) =>
+        h.length >= 3 &&
+        Math.abs(ringArea(h)) >= 25 &&
+        isSimpleRing(h) &&
+        h.every((p) => pointInRing(p, outer)),
+    );
+}
+
+// Grid-sampled area (m²) of ring `a` that also lies inside ring `b`.
+function overlapArea(a, b, step = 1.5) {
+  const xs = a.map((p) => p[0]);
+  const zs = a.map((p) => p[1]);
+  const bx = b.map((p) => p[0]);
+  const bz = b.map((p) => p[1]);
+  const x0 = Math.max(Math.min(...xs), Math.min(...bx));
+  const x1 = Math.min(Math.max(...xs), Math.max(...bx));
+  const z0 = Math.max(Math.min(...zs), Math.min(...bz));
+  const z1 = Math.min(Math.max(...zs), Math.max(...bz));
+  let hits = 0;
+  for (let x = x0; x <= x1; x += step) {
+    for (let z = z0; z <= z1; z += step) {
+      if (pointInRing([x, z], a) && pointInRing([x, z], b)) hits++;
+    }
+  }
+  return hits * step * step;
+}
+
+// OSM often maps one building twice (an old simple way and a newer detailed
+// multipolygon), and hand-placed extras can land on a real footprint. When two
+// footprints share > 30% of the smaller, keep the more detailed one —
+// courtyards first, then real OSM over hand-placed, then the larger — and let
+// it inherit the other's name and metadata if it has no identity of its own.
+export function dedupeBuildings(buildings) {
+  const area = (b) => Math.abs(ringArea(b.footprint));
+  const rank = (b) => [b.holes ? 1 : 0, b.id.startsWith('x-') ? 0 : 1, area(b)];
+  const better = (a, b) => {
+    const [ra, rb] = [rank(a), rank(b)];
+    for (let i = 0; i < ra.length; i++) if (ra[i] !== rb[i]) return ra[i] > rb[i];
+    return a.id < b.id;
+  };
+  const named = (b) => !b.meta.generic && !b.name.startsWith('(unnamed');
+  for (let i = 0; i < buildings.length; i++) {
+    for (let j = i + 1; j < buildings.length; j++) {
+      const a = buildings[i];
+      const b = buildings[j];
+      const small = Math.min(area(a), area(b));
+      if (overlapArea(a.footprint, b.footprint) <= 0.3 * small) continue;
+      const [keep, drop] = better(a, b) ? [a, b] : [b, a];
+      if (named(drop) && !named(keep)) {
+        keep.name = drop.name;
+        keep.category = drop.category;
+        keep.levels = drop.levels;
+        keep.height = drop.height;
+        keep.meta = { ...drop.meta, roof: keep.meta.roof };
+      }
+      buildings.splice(buildings.indexOf(drop), 1);
+      i = -1; // restart: indices shifted
+      break;
+    }
+  }
+  return buildings;
+}
+
+// Fallback: clean noisy / self-intersecting footprints into convex prisms
+// that extrude without triangulation artifacts.
 function sanitizeFootprint(ring) {
   let r = simplifyRing(ensureWinding(dedupeRing(ring), true), 1.6);
   if (r.length < 3) return null;
@@ -179,9 +257,10 @@ export function buildCampus(overpassJson, opts = {}) {
   };
 
   const buildings = [];
-  const pushBuilding = (id, name, ringXZ, tags, levelsHint, curatedMeta) => {
-    const ring = sanitizeFootprint(ringXZ);
+  const pushBuilding = (id, name, ringXZ, tags, levelsHint, curatedMeta, holesXZ) => {
+    const ring = footprintShape(ringXZ);
     if (!ring) return; // degenerate
+    const holes = courtyardRings(holesXZ, ring);
     if (!centroidInCampus(ring)) return;
 
     let cur = curatedMeta ?? curatedFor(id, name);
@@ -195,6 +274,7 @@ export function buildCampus(overpassJson, opts = {}) {
       name: cur.name ?? name ?? '(unnamed building)',
       category,
       footprint: ring.map(([x, z]) => [round(x), round(z)]),
+      ...(holes.length && { holes: holes.map((h) => h.map(([x, z]) => [round(x), round(z)])) }),
       centroid: ringCentroid(ring).map((v) => round(v)),
       height: round(height),
       levels,
@@ -219,6 +299,9 @@ export function buildCampus(overpassJson, opts = {}) {
       b.name,
       b.geometry.map((p) => proj.toXZ(p)),
       b.tags,
+      undefined,
+      undefined,
+      b.holes?.map((h) => h.map((p) => proj.toXZ(p))),
     );
   }
   for (const xb of curated.extraBuildings ?? []) {
@@ -234,6 +317,7 @@ export function buildCampus(overpassJson, opts = {}) {
       { ...(xb.meta ?? {}), category: xb.category, name: xb.name, floors: xb.levels },
     );
   }
+  dedupeBuildings(buildings);
   buildings.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
   // Clip road polylines to the campus: keep only runs of segments whose

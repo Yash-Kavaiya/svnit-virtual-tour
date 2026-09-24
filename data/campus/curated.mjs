@@ -134,23 +134,49 @@ export default {
       category: 'admin',
       description: 'Coordinates campus recruitment, internships and industry relations.',
     },
+    // Hostel facts: SVNIT Hostel Information Brochure 2025-26, table 1.1
+    // (7 boys, 2 girls, 1 married-scholars hostel).
     'gajjar bhavan h4': {
       category: 'hostel',
-      description: 'First-year boys hostel (Hostel 4).',
+      description: 'Boys hostel — 662 rooms, double/triple occupancy.',
     },
-    'bhabha bhavan': { category: 'hostel', description: 'Boys hostel, named after Homi J. Bhabha.' },
-    'h- 13 swami vivekanand bhavan': {
+    'bhabha bhavan': {
       category: 'hostel',
-      description: 'Nine-storey boys hostel (Hostel 13), the tallest residence on campus.',
+      description: 'Boys hostel named after Homi J. Bhabha — 480 double rooms.',
+    },
+    'h- 13 swami vivekanand bhavan': {
+      name: 'Swami Vivekanand Bhavan (H-13)',
+      category: 'hostel',
+      description: 'The largest boys hostel — 950 double rooms around courtyards.',
     },
     'tagor bhavan': {
+      name: 'Tagore Bhavan',
       category: 'hostel',
-      description: 'Boys hostel, named after Rabindranath Tagore.',
+      description: 'Boys hostel named after Rabindranath Tagore — 192 single/double rooms.',
     },
     'raman bhavan h10': {
       category: 'hostel',
-      description: 'Boys hostel (Hostel 10), named after C. V. Raman.',
+      description: 'Family accommodation for married scholars — 98 units. Named after C. V. Raman.',
     },
+    'nehru bhavan': {
+      category: 'hostel',
+      description: 'Boys hostel — 204 single/double rooms.',
+    },
+    'sarabhai bhavan': {
+      category: 'hostel',
+      description: 'Boys hostel named after Vikram Sarabhai — 128 double/triple rooms.',
+    },
+    'mother teresa bhavan-girls hostel': {
+      name: 'Mother Teresa Bhavan (Girls Hostel)',
+      category: 'hostel',
+      established: 2009,
+      description:
+        'The main girls hostel, established 2009 — 800 single/double rooms, with its own mess, gym and gardens.',
+    },
+    // OSM multipolygon "New CRC", tagged 8 levels
+    'new crc': { category: 'academic', description: 'New CRC building, eight storeys (per OpenStreetMap).' },
+    // unnamed courtyard block beside Mother Teresa Bhavan
+    r5379718: { name: 'Hostel Block', category: 'hostel', floors: 4, generic: true },
     'svnit guest house': {
       category: 'hostel',
       description: 'Institute guest house for visitors, parents and invited faculty.',
@@ -161,13 +187,6 @@ export default {
     },
     // The SVNIT Canteen. OSM maps it as an unnamed building way here plus an
     // amenity=cafe node ("Canteen", @21.16438,72.78602) on top of it.
-    // the hand-placed Narmad box sat on this unnamed OSM footprint
-    w361364104: {
-      name: 'Narmad Bhavan (Girls Hostel)',
-      category: 'hostel',
-      floors: 5,
-      description: 'Girls hostel for all departments, named after the Gujarati poet Narmad.',
-    },
     // unnamed footprint holding OSM's 'State Bank of India' ATM node
     w361364027: {
       floors: 2,
@@ -185,32 +204,6 @@ export default {
   },
 
   extraBuildings: [
-    {
-      id: 'x-nehru',
-      name: 'Nehru Bhavan',
-      category: 'hostel',
-      levels: 5,
-      footprintLatLon: [
-        { lat: 21.1601, lon: 72.7861 },
-        { lat: 21.1601, lon: 72.7867 },
-        { lat: 21.1604, lon: 72.7867 },
-        { lat: 21.1604, lon: 72.7861 },
-      ],
-      meta: { description: 'Final-year boys hostel.' },
-    },
-    {
-      id: 'x-sarabhai',
-      name: 'Sarabhai Bhavan',
-      category: 'hostel',
-      levels: 5,
-      footprintLatLon: [
-        { lat: 21.1607, lon: 72.7861 },
-        { lat: 21.1607, lon: 72.7867 },
-        { lat: 21.161, lon: 72.7867 },
-        { lat: 21.161, lon: 72.7861 },
-      ],
-      meta: { description: 'Postgraduate and research scholars hostel, named after Vikram Sarabhai.' },
-    },
     {
       id: 'x-auditorium',
       name: 'Gajjar Auditorium',
