@@ -43,7 +43,15 @@ describe('onPavement', () => {
     const { onPavement } = await import('../../src/world/StreetKit.js');
     const campus = {
       bounds,
-      roads: [{ width: 6, path: [[-50, 0], [50, 0]] }],
+      roads: [
+        {
+          width: 6,
+          path: [
+            [-50, 0],
+            [50, 0],
+          ],
+        },
+      ],
       gates: [{ x: 0, z: -100, width: 16, wallAngle: 0 }],
       pois: [{ type: 'statue', x: 40, z: 40 }],
     };

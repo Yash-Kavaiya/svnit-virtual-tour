@@ -34,8 +34,8 @@ Footprints tagged only `building=yes` get an identity in this order:
    — this is how the SBI branch near the gate is found;
 2. otherwise the first matching `unnamedRules` entry (a local-metre `box`,
    `minArea`, `category`, `floors` number or `(area) => floors`) labels it
-   generically — *Staff Quarters*, *Academic Block*, *Hostel Block*,
-   *Service Building*. Generic buildings are labelled in-world but kept out
+   generically — _Staff Quarters_, _Academic Block_, _Hostel Block_,
+   _Service Building_. Generic buildings are labelled in-world but kept out
    of the directory. A curated `buildings[id]` entry always wins.
 
 ## Gates

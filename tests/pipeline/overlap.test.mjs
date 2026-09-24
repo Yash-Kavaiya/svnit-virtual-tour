@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { pointInRing } from '../../src/shared/polygon.mjs';
 
-const campus = JSON.parse(readFileSync(new URL('../../src/data/campus.generated.json', import.meta.url)));
+const campus = JSON.parse(
+  readFileSync(new URL('../../src/data/campus.generated.json', import.meta.url)),
+);
 
 // Grid-sampled overlap area (m²) of footprint b inside footprint a.
 function overlapArea(a, b, step = 1.5) {
@@ -24,7 +26,8 @@ describe('generated campus', () => {
     for (let i = 0; i < B.length; i++) {
       for (let j = i + 1; j < B.length; j++) {
         const [a, b] = [B[i], B[j]];
-        if (Math.hypot(a.centroid[0] - b.centroid[0], a.centroid[1] - b.centroid[1]) > 160) continue;
+        if (Math.hypot(a.centroid[0] - b.centroid[0], a.centroid[1] - b.centroid[1]) > 160)
+          continue;
         const area = overlapArea(a.footprint, b.footprint);
         if (area > 10) clashes.push(`${a.name} x ${b.name}: ${area} m²`);
       }
