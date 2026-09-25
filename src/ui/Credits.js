@@ -48,6 +48,7 @@ export class Credits {
       el('p', {}, el('strong', {}, 'Reference '), '— hostel facts and the two entrance gates follow the SVNIT Hostel Information Brochure 2025-26; library figures follow the SVNIT Central Library website. The Hindi name uses Noto Sans Devanagari (SIL Open Font License).'),
       el('p', {}, el('strong', {}, 'Buildings, interiors, props, landscaping, audio and tour narration '), 'are original and interpretive — building facades and interior layouts are plausible reconstructions, not exact representations of the real buildings.'),
       el('p', {}, 'Built with three.js, troika-three-text and three-mesh-bvh.'),
+      el('p', { style: { color: 'var(--text-dim)', fontSize: '.8rem' } }, 'This site uses Microsoft Clarity to understand how visitors use the tour (anonymous usage analytics).'),
       el('p', { style: { color: 'var(--text-dim)', fontSize: '.8rem' } }, 'Not affiliated with or endorsed by SVNIT. Campus data can be corrected in data/campus/curated.mjs.'),
     );
     this.node.hidden = true;
