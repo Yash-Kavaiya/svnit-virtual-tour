@@ -4,6 +4,7 @@ import { lampPost, bench, bin, bollard, busStop } from './propModels.js';
 import { Settings } from '../core/Settings.js';
 import { TIME_PRESETS } from './TimeOfDay.js';
 import { events } from '../core/events.js';
+import { gateFrame } from './gateFrame.js';
 
 export function createStreetKit(campus, registry, buildingsApi) {
   const group = new THREE.Group();
@@ -29,7 +30,31 @@ export function createStreetKit(campus, registry, buildingsApi) {
       }
     }
   }
-  const lampMeshes = instanceGroup(lampProto, lampPts, dummy);
+  const lampSpots = lampPts.filter(([x, z]) => !onPavement(campus, x, z));
+  const lampMeshes = instanceGroup(lampProto, lampSpots, dummy);
+
+  // warm pools of light under each lamp head (additive decals, no real lights)
+  const poolMat = new THREE.MeshBasicMaterial({
+    map: radialFalloffTexture(),
+    color: '#ffc27a',
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const poolGeo = new THREE.PlaneGeometry(16, 16).rotateX(-Math.PI / 2);
+  const pools = new THREE.InstancedMesh(poolGeo, poolMat, Math.max(1, lampSpots.length));
+  lampSpots.forEach(([x, z, rot], i) => {
+    // the lamp head hangs ~1 m out along the arm (local +x)
+    dummy.position.set(x + Math.cos(rot) * 1.4, 0.1, z - Math.sin(rot) * 1.4);
+    dummy.rotation.set(0, 0, 0);
+    dummy.updateMatrix();
+    pools.setMatrixAt(i, dummy.matrix);
+  });
+  pools.count = lampSpots.length;
+  pools.renderOrder = 2;
+  pools.name = 'lamp-pools';
+  group.add(pools);
   const bulbs = [];
   lampMeshes.forEach((m) => {
     group.add(m);
@@ -78,18 +103,25 @@ export function createStreetKit(campus, registry, buildingsApi) {
   const zones = campus.pois.filter((p) => p.type === 'zone');
   const gate = campus.gates?.[0];
   const stopSpots = [];
-  if (gate) stopSpots.push([gate.x, gate.z + 20]);
+  if (gate) {
+    // outside the gate, beside the carriageway, facing the road
+    const { inx, inz, halfOpening } = gateFrame(gate, campus.bounds);
+    const side = halfOpening + 12;
+    // on the emblem-pillar side, clear of the name wall
+    stopSpots.push([gate.x - inx * 9 - inz * side, gate.z - inz * 9 + inx * side, Math.atan2(-inx, -inz)]);
+  }
   const acad = zones.find((z) => /academic/i.test(z.name));
-  if (acad) stopSpots.push([acad.x + 25, acad.z]);
-  for (const [x, z] of stopSpots) {
+  if (acad) stopSpots.push([acad.x + 25, acad.z, 0]);
+  for (const [x, z, rot] of stopSpots) {
     const s = busStop();
     s.position.set(x, 0, z);
+    s.rotation.y = rot;
     group.add(s);
   }
 
   // --- direction signboards at zone centres
   for (const z of zones) {
-    if (/main gate/i.test(z.name)) continue;
+    if (/gate/i.test(z.name)) continue; // gates carry their own name boards
     const sign = new THREE.Group();
     const post = new THREE.Mesh(
       new THREE.CylinderGeometry(0.06, 0.06, 2.4, 6),
@@ -119,6 +151,8 @@ export function createStreetKit(campus, registry, buildingsApi) {
     const name = Settings.get('timeOfDay');
     const on = name === 'dusk' || name === 'night' ? 1 : 0;
     for (const b of bulbs) b.material.emissiveIntensity = on * (name === 'night' ? 2.2 : 1.1);
+    poolMat.opacity = on * (name === 'night' ? 0.9 : 0.35);
+    pools.visible = on > 0;
   };
   applyGlow();
   const onSettings = ({ key }) => key === 'timeOfDay' && applyGlow();
@@ -166,4 +200,51 @@ function instanceGroup(proto, points, dummy) {
     meshes.push(inst);
   }
   return meshes;
+}
+
+const segDist = (x, z, a, b) => {
+  const ex = b[0] - a[0];
+  const ez = b[1] - a[1];
+  const t = Math.max(0, Math.min(1, ((x - a[0]) * ex + (z - a[1]) * ez) / (ex * ex + ez * ez || 1)));
+  return Math.hypot(x - a[0] - ex * t, z - a[1] - ez * t);
+};
+
+// True when (x, z) is on a carriageway, the gate approach, or the statue
+// roundabout island — somewhere a lamp post must not stand.
+export function onPavement(campus, x, z) {
+  for (const r of campus.roads) {
+    for (let i = 0; i < r.path.length - 1; i++) {
+      if (segDist(x, z, r.path[i], r.path[i + 1]) < r.width / 2 + 0.4) return true;
+    }
+  }
+  for (const g of campus.gates ?? []) {
+    const { inx, inz, halfOpening } = gateFrame(g, campus.bounds);
+    const along = (x - g.x) * inx + (z - g.z) * inz;
+    const across = Math.abs((x - g.x) * inz - (z - g.z) * inx);
+    if (along > -16 && along < 16 && across < halfOpening + 2) return true;
+  }
+  for (const p of campus.pois) {
+    if (p.type === 'statue' && Math.hypot(x - p.x, z - p.z) < 8) return true;
+  }
+  return false;
+}
+
+// 64x64 radial falloff (bright centre -> transparent edge), built without a
+// canvas so it also works under test.
+function radialFalloffTexture(size = 64) {
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const d = Math.hypot(x - size / 2 + 0.5, y - size / 2 + 0.5) / (size / 2);
+      const a = Math.max(0, 1 - d) ** 2;
+      const i = (y * size + x) * 4;
+      data[i] = data[i + 1] = data[i + 2] = Math.round(255 * a);
+      data[i + 3] = 255;
+    }
+  }
+  const tex = new THREE.DataTexture(data, size, size);
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  return tex;
 }

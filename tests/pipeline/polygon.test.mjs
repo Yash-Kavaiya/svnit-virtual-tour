@@ -114,3 +114,24 @@ describe('polygon', () => {
     expect(w).toBeLessThanOrEqual(95.5);
   });
 });
+
+describe('isSimpleRing / stitchRings', () => {
+  it('detects a bow-tie', async () => {
+    const { isSimpleRing } = await import('../../src/shared/polygon.mjs');
+    expect(isSimpleRing([[0, 0], [10, 0], [10, 10], [0, 10]])).toBe(true);
+    expect(isSimpleRing([[0, 0], [10, 10], [10, 0], [0, 10]])).toBe(false);
+    // concave L is still simple
+    expect(isSimpleRing([[0, 0], [10, 0], [10, 4], [4, 4], [4, 10], [0, 10]])).toBe(true);
+  });
+  it('joins member ways in any direction into closed rings', async () => {
+    const { stitchRings } = await import('../../src/shared/polygon.mjs');
+    const rings = stitchRings([
+      [[0, 0], [10, 0]],
+      [[10, 10], [10, 0]], // reversed
+      [[10, 10], [0, 10], [0, 0]],
+      [[50, 50], [60, 50]], // never closes
+    ]);
+    expect(rings).toHaveLength(1);
+    expect(rings[0]).toEqual([[0, 0], [10, 0], [10, 10], [0, 10]]);
+  });
+});

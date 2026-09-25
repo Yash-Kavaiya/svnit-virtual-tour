@@ -14,6 +14,7 @@ import {
   convexHull,
   orientedBox,
   clampOrientedBox,
+  isSimpleRing,
 } from '../src/shared/polygon.mjs';
 import { validateCampusData } from '../src/data/schema.mjs';
 
@@ -96,9 +97,86 @@ function bboxSides(ring) {
   return [maxX - minX, maxZ - minZ];
 }
 
-// Clean noisy / concave / hollow OSM footprints into convex prisms that
-// extrude without triangulation artifacts. Courtyard detail is traded for
-// robustness, which the spec permits for v1.
+// Keep the real OSM outline (concave wings, L/U shapes) whenever it is a
+// valid simple polygon after light simplification; only broken geometry
+// falls back to the convex clean-up below.
+function footprintShape(ring) {
+  const r = simplifyRing(ensureWinding(dedupeRing(ring), true), 0.5);
+  if (r.length >= 3 && Math.abs(ringArea(r)) >= 20 && isSimpleRing(r)) return r;
+  return sanitizeFootprint(ring);
+}
+
+// Courtyards: inner rings kept when valid, >= 25 m², and wholly inside the
+// outer ring. Wound clockwise (the opposite of the outer ring).
+function courtyardRings(holes, outer) {
+  return (holes ?? [])
+    .map((h) => simplifyRing(ensureWinding(dedupeRing(h), false), 0.5))
+    .filter(
+      (h) =>
+        h.length >= 3 &&
+        Math.abs(ringArea(h)) >= 25 &&
+        isSimpleRing(h) &&
+        h.every((p) => pointInRing(p, outer)),
+    );
+}
+
+// Grid-sampled area (m²) of ring `a` that also lies inside ring `b`.
+function overlapArea(a, b, step = 1.5) {
+  const xs = a.map((p) => p[0]);
+  const zs = a.map((p) => p[1]);
+  const bx = b.map((p) => p[0]);
+  const bz = b.map((p) => p[1]);
+  const x0 = Math.max(Math.min(...xs), Math.min(...bx));
+  const x1 = Math.min(Math.max(...xs), Math.max(...bx));
+  const z0 = Math.max(Math.min(...zs), Math.min(...bz));
+  const z1 = Math.min(Math.max(...zs), Math.max(...bz));
+  let hits = 0;
+  for (let x = x0; x <= x1; x += step) {
+    for (let z = z0; z <= z1; z += step) {
+      if (pointInRing([x, z], a) && pointInRing([x, z], b)) hits++;
+    }
+  }
+  return hits * step * step;
+}
+
+// OSM often maps one building twice (an old simple way and a newer detailed
+// multipolygon), and hand-placed extras can land on a real footprint. When two
+// footprints share > 30% of the smaller, keep the more detailed one —
+// courtyards first, then real OSM over hand-placed, then the larger — and let
+// it inherit the other's name and metadata if it has no identity of its own.
+export function dedupeBuildings(buildings) {
+  const area = (b) => Math.abs(ringArea(b.footprint));
+  const rank = (b) => [b.holes ? 1 : 0, b.id.startsWith('x-') ? 0 : 1, area(b)];
+  const better = (a, b) => {
+    const [ra, rb] = [rank(a), rank(b)];
+    for (let i = 0; i < ra.length; i++) if (ra[i] !== rb[i]) return ra[i] > rb[i];
+    return a.id < b.id;
+  };
+  const named = (b) => !b.meta.generic && !b.name.startsWith('(unnamed');
+  for (let i = 0; i < buildings.length; i++) {
+    for (let j = i + 1; j < buildings.length; j++) {
+      const a = buildings[i];
+      const b = buildings[j];
+      const small = Math.min(area(a), area(b));
+      if (overlapArea(a.footprint, b.footprint) <= 0.3 * small) continue;
+      const [keep, drop] = better(a, b) ? [a, b] : [b, a];
+      if (named(drop) && !named(keep)) {
+        keep.name = drop.name;
+        keep.category = drop.category;
+        keep.levels = drop.levels;
+        keep.height = drop.height;
+        keep.meta = { ...drop.meta, roof: keep.meta.roof };
+      }
+      buildings.splice(buildings.indexOf(drop), 1);
+      i = -1; // restart: indices shifted
+      break;
+    }
+  }
+  return buildings;
+}
+
+// Fallback: clean noisy / self-intersecting footprints into convex prisms
+// that extrude without triangulation artifacts.
 function sanitizeFootprint(ring) {
   let r = simplifyRing(ensureWinding(dedupeRing(ring), true), 1.6);
   if (r.length < 3) return null;
@@ -152,13 +230,41 @@ export function buildCampus(overpassJson, opts = {}) {
   const curatedFor = (id, name) =>
     curated.buildings?.[id] ?? curated.buildings?.[nameKey(name)] ?? {};
 
+  // Generic identity for an unnamed footprint from curated.unnamedRules.
+  // An explicit OSM building type (apartments, house…) keeps its category.
+  const unnamedRuleFor = (ring, tags) => {
+    const [cx, cz] = ringCentroid(ring);
+    const area = ringArea(ring);
+    const rule = (curated.unnamedRules ?? []).find(
+      ({ box: [x0, z0, x1, z1], minArea = 0 }) =>
+        cx >= x0 && cx <= x1 && cz >= z0 && cz <= z1 && area >= minArea,
+    );
+    if (!rule) return {};
+    const tagged = classifyBuilding({ tags: tags ?? {} });
+    const category = tagged === 'utility' ? rule.category : tagged;
+    const floors = typeof rule.floors === 'function' ? rule.floors(area) : rule.floors;
+    return { name: rule.name, category, floors, generic: true };
+  };
+
+  // A named OSM node inside an unnamed footprint describes that building.
+  const POI_CATEGORY = { atm: 'amenity', bank: 'amenity', cafe: 'dining', restaurant: 'dining', hostel: 'hostel' };
+  const poiPoints = (parsed.pois ?? [])
+    .filter((p) => POI_CATEGORY[p.type] && Number.isFinite(p.lat))
+    .map((p) => ({ ...p, xz: proj.toXZ(p) }));
+  const poiInside = (ring) => {
+    const p = poiPoints.find((q) => pointInRing(q.xz, ring));
+    return p && { name: p.name, category: POI_CATEGORY[p.type] };
+  };
+
   const buildings = [];
-  const pushBuilding = (id, name, ringXZ, tags, levelsHint, curatedMeta) => {
-    const ring = sanitizeFootprint(ringXZ);
+  const pushBuilding = (id, name, ringXZ, tags, levelsHint, curatedMeta, holesXZ) => {
+    const ring = footprintShape(ringXZ);
     if (!ring) return; // degenerate
+    const holes = courtyardRings(holesXZ, ring);
     if (!centroidInCampus(ring)) return;
 
-    const cur = curatedMeta ?? curatedFor(id, name);
+    let cur = curatedMeta ?? curatedFor(id, name);
+    if (!name && !cur.name) cur = { ...(poiInside(ring) ?? unnamedRuleFor(ring, tags)), ...cur };
     const category = cur.category ?? classifyBuilding({ tags: tags ?? {}, name });
     const lvHint = cur.floors ?? levelsHint ?? Number(tags?.['building:levels']);
     const { height, levels } = estimateHeight(category, lvHint);
@@ -168,6 +274,7 @@ export function buildCampus(overpassJson, opts = {}) {
       name: cur.name ?? name ?? '(unnamed building)',
       category,
       footprint: ring.map(([x, z]) => [round(x), round(z)]),
+      ...(holes.length && { holes: holes.map((h) => h.map(([x, z]) => [round(x), round(z)])) }),
       centroid: ringCentroid(ring).map((v) => round(v)),
       height: round(height),
       levels,
@@ -181,16 +288,28 @@ export function buildCampus(overpassJson, opts = {}) {
         accent: cur.accent ?? ACCENT_BY_CATEGORY[category] ?? '#888888',
         roof: cur.roof ?? (category === 'workshop' ? 'sawtooth' : 'flat'),
         hasInterior: Boolean(cur.hasInterior),
+        ...(cur.generic && { generic: true }),
       },
     });
   };
 
+  // An indoor sports centre mapped only as a leisure area is still a building.
+  for (const gr of parsed.grounds ?? []) {
+    if (gr.tags?.leisure !== 'sports_centre' || !/table_tennis|badminton|squash|gym/.test(gr.tags.sport ?? '')) continue;
+    pushBuilding(gr.id, gr.name, gr.geometry.map((p) => proj.toXZ(p)), gr.tags, 2, {
+      ...curatedFor(gr.id, gr.name),
+      category: 'sports',
+    });
+  }
   for (const b of parsed.buildings) {
     pushBuilding(
       b.id,
       b.name,
       b.geometry.map((p) => proj.toXZ(p)),
       b.tags,
+      undefined,
+      undefined,
+      b.holes?.map((h) => h.map((p) => proj.toXZ(p))),
     );
   }
   for (const xb of curated.extraBuildings ?? []) {
@@ -206,6 +325,7 @@ export function buildCampus(overpassJson, opts = {}) {
       { ...(xb.meta ?? {}), category: xb.category, name: xb.name, floors: xb.levels },
     );
   }
+  dedupeBuildings(buildings);
   buildings.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
   // Clip road polylines to the campus: keep only runs of segments whose
@@ -288,7 +408,7 @@ export function buildCampus(overpassJson, opts = {}) {
     .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
   for (const z of curated.zones ?? []) {
-    const [x, zz] = proj.toXZ(z);
+    const [x, zz] = z.xz ?? proj.toXZ(z);
     pois.push({ name: z.name, type: 'zone', x: round(x), z: round(zz), rot: 0 });
   }
   for (const p of curated.extraPois ?? []) {
@@ -296,9 +416,37 @@ export function buildCampus(overpassJson, opts = {}) {
     pois.push({ name: p.name, type: p.type ?? 'poi', x: round(xz[0]), z: round(xz[1]), rot: p.rot ?? 0 });
   }
 
+  // Snap each gate onto the nearest boundary edge (within 40 m) so it sits in
+  // the perimeter wall; `wallAngle` is that edge's direction in the x/z plane.
   const gates = (curated.gates ?? []).map((g) => {
-    const [x, z] = proj.toXZ(g);
-    return { name: g.name, x: round(x), z: round(z), rot: g.rot ?? 0, width: g.width ?? 12 };
+    const [ox, oz] = g.xz ?? proj.toXZ(g);
+    let [x, z] = [ox, oz];
+    let wallAngle;
+    let best = 40;
+    for (let i = 0; i < boundary.length; i++) {
+      const [ax, az] = boundary[i];
+      const [bx, bz] = boundary[(i + 1) % boundary.length];
+      const ex = bx - ax;
+      const ez = bz - az;
+      const t = Math.max(0, Math.min(1, ((ox - ax) * ex + (oz - az) * ez) / (ex * ex + ez * ez || 1)));
+      const px = ax + ex * t;
+      const pz = az + ez * t;
+      const d = Math.hypot(px - ox, pz - oz);
+      if (d < best) {
+        best = d;
+        [x, z] = [px, pz];
+        wallAngle = Math.atan2(ez, ex);
+      }
+    }
+    return {
+      name: g.name,
+      x: round(x),
+      z: round(z),
+      rot: g.rot ?? 0,
+      width: g.width ?? 12,
+      ...(g.style && { style: g.style }),
+      ...(wallAngle !== undefined && { wallAngle: round(wallAngle, 4) }),
+    };
   });
 
   const xs = boundary.map((p) => p[0]);
@@ -343,6 +491,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     gates: campus.gates.length,
   };
   console.log('campus.generated.json written:', JSON.stringify(counts));
-  const named = campus.buildings.filter((b) => !b.name.startsWith('(unnamed'));
+  const named = campus.buildings.filter((b) => !b.meta.generic && !b.name.startsWith('(unnamed'));
   console.log(`named buildings: ${named.length} / ${campus.buildings.length}`);
 }

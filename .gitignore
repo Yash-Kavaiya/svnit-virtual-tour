@@ -4,3 +4,7 @@ dist
 .DS_Store
 .vite
 coverage
+.playwright-mcp/
+
+.vercel
+.env*

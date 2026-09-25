@@ -32,7 +32,8 @@ export class Collider {
         minZ = Math.min(minZ, z);
         maxZ = Math.max(maxZ, z);
       }
-      return { ring, minX, maxX, minZ, maxZ };
+      // courtyards are open ground: inside the outer ring but outside every hole
+      return { ring, holes: b.holes ?? [], minX, maxX, minZ, maxZ };
     });
     this.#boundary = boundary ?? null;
 
@@ -79,16 +80,18 @@ export class Collider {
       for (const b of this.#near(p)) {
         if (p[0] < b.minX - radius || p[0] > b.maxX + radius) continue;
         if (p[1] < b.minZ - radius || p[1] > b.maxZ + radius) continue;
-        const inside = pointInRing(p, b.ring);
-        // nearest edge point
+        const inside = pointInRing(p, b.ring) && !b.holes.some((h) => pointInRing(p, h));
+        // nearest edge point, over the outer ring and the courtyard rings
         let best = null;
         let bestD = Infinity;
-        for (let i = 0; i < b.ring.length; i++) {
-          const c = segmentClosestPoint(p, b.ring[i], b.ring[(i + 1) % b.ring.length]);
-          const d = Math.hypot(c[0] - p[0], c[1] - p[1]);
-          if (d < bestD) {
-            bestD = d;
-            best = c;
+        for (const loop of [b.ring, ...b.holes]) {
+          for (let i = 0; i < loop.length; i++) {
+            const c = segmentClosestPoint(p, loop[i], loop[(i + 1) % loop.length]);
+            const d = Math.hypot(c[0] - p[0], c[1] - p[1]);
+            if (d < bestD) {
+              bestD = d;
+              best = c;
+            }
           }
         }
         if (!best) continue;

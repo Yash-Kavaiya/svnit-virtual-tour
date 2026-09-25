@@ -154,3 +154,114 @@ describe('buildCampus curated overlay', () => {
     expect(validateCampusData(campus).ok).toBe(true);
   });
 });
+
+describe('buildCampus unnamedRules', () => {
+  const unnamed = (id, tags, dLon = 0) => ({
+    type: 'way',
+    id,
+    tags,
+    geometry: [
+      { lat: 21.1632, lon: 72.7856 + dLon },
+      { lat: 21.1632, lon: 72.7859 + dLon },
+      { lat: 21.1635, lon: 72.7859 + dLon },
+      { lat: 21.1635, lon: 72.7856 + dLon },
+    ],
+  });
+  const raw = {
+    elements: [
+      ...FIXTURE.elements,
+      unnamed(50, { building: 'yes' }),
+      unnamed(51, { building: 'apartments' }, 0.001),
+    ],
+  };
+  const curated = {
+    ...EMPTY_CURATED,
+    unnamedRules: [
+      { name: 'Too Big', category: 'academic', box: [-1e4, -1e4, 1e4, 1e4], minArea: 1e6, floors: 9 },
+      { name: 'Staff Quarters', category: 'residence', box: [-1e4, -1e4, 1e4, 1e4], floors: (a) => (a > 100 ? 3 : 1) },
+    ],
+  };
+  const campus = buildCampus(raw, { curated });
+  const w50 = campus.buildings.find((b) => b.id === 'w50');
+
+  it('names an unnamed footprint from the first rule it satisfies', () => {
+    expect(w50.name).toBe('Staff Quarters');
+    expect(w50.category).toBe('residence');
+    expect(w50.levels).toBe(3); // ~1000 m² footprint, floors(area) callback
+    expect(w50.meta.generic).toBe(true);
+    expect(w50.meta.facade).toBe('residence');
+  });
+  it('leaves named buildings untouched', () => {
+    const mech = campus.buildings.find((b) => b.name.includes('Mechanical'));
+    expect(mech.meta.generic).toBeUndefined();
+    expect(mech.category).toBe('academic');
+  });
+  it('lets an explicit OSM building type win over the rule category', () => {
+    expect(classifyOf(campus, 'w51')).toBe('residence');
+  });
+});
+
+const classifyOf = (campus, id) => campus.buildings.find((b) => b.id === id).category;
+
+describe('buildCampus names a footprint from the POI inside it', () => {
+  const raw = {
+    elements: [
+      ...FIXTURE.elements,
+      {
+        type: 'way',
+        id: 60,
+        tags: { building: 'yes' },
+        geometry: [
+          { lat: 21.1632, lon: 72.7856 },
+          { lat: 21.1632, lon: 72.7859 },
+          { lat: 21.1635, lon: 72.7859 },
+          { lat: 21.1635, lon: 72.7856 },
+        ],
+      },
+      { type: 'node', id: 61, tags: { amenity: 'atm', name: 'State Bank of India' }, lat: 21.16335, lon: 72.78575 },
+    ],
+  };
+  const campus = buildCampus(raw, { curated: EMPTY_CURATED });
+  it('takes the name and an amenity category', () => {
+    const b = campus.buildings.find((x) => x.id === 'w60');
+    expect(b.name).toBe('State Bank of India');
+    expect(b.category).toBe('amenity');
+    expect(b.meta.generic).toBeUndefined();
+  });
+});
+
+describe('buildCampus multipolygons and duplicates', () => {
+  const ring = (lat, lon, d) => [
+    { lat, lon },
+    { lat, lon: lon + d },
+    { lat: lat + d, lon: lon + d },
+    { lat: lat + d, lon },
+    { lat, lon },
+  ];
+  const raw = {
+    elements: [
+      ...FIXTURE.elements,
+      // old simple way for a hostel...
+      { type: 'way', id: 70, tags: { building: 'yes', name: 'Tagore Bhavan' }, geometry: ring(21.1632, 72.7856, 0.0006) },
+      // ...and the newer detailed multipolygon of the same building, with a courtyard
+      {
+        type: 'relation',
+        id: 71,
+        tags: { building: 'yes', type: 'multipolygon' },
+        members: [
+          { type: 'way', role: 'outer', geometry: ring(21.1632, 72.7856, 0.0006) },
+          { type: 'way', role: 'inner', geometry: ring(21.1634, 72.7858, 0.0002) },
+        ],
+      },
+    ],
+  };
+  const campus = buildCampus(raw, { curated: EMPTY_CURATED });
+  it('keeps the detailed multipolygon, with its courtyard and the old name', () => {
+    expect(campus.buildings.find((b) => b.id === 'w70')).toBeUndefined();
+    const r = campus.buildings.find((b) => b.id === 'r71');
+    expect(r.name).toBe('Tagore Bhavan');
+    expect(r.category).toBe('hostel');
+    expect(r.holes).toHaveLength(1);
+    expect(validateCampusData(campus).ok).toBe(true);
+  });
+});

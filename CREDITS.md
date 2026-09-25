@@ -1,5 +1,7 @@
 # Credits
 
+Created by **Yash Kavaiya** — [LinkedIn](https://www.linkedin.com/in/yashkavaiya) · [X](https://x.com/yashkavaiya)
+
 ## Campus geometry
 
 The campus boundary, building footprints, internal road network and water
@@ -21,8 +23,9 @@ derived from any proprietary source:
   water tanks, entrance canopies, name-boards)
 - All three interiors (Central Library, Lecture Theatre, Administration
   lobby) — plausible institutional layouts, not measured reconstructions
-- Landmarks — the Sardar Vallabhbhai Patel statue, the main gate, flagpole
-  and fountain
+- Landmarks — the Sardar Vallabhbhai Patel statue and its roundabout, the
+  main gate (placed at OSM's `entrance=main` at Ichchhanath), the SBI ATM
+  signage and the flagpole
 - Landscaping, street furniture, ambient students and bicycles
 - All audio — synthesized at runtime with the Web Audio API
 - Guided-tour route and narration text
@@ -44,3 +47,17 @@ or endorsed by the Sardar Vallabhbhai National Institute of Technology.
 Facades and interiors are interpretive and should not be relied on as
 accurate depictions of the real campus. Corrections are welcome — edit
 `data/campus/curated.mjs` and re-run `npm run data`.
+
+## Fonts
+
+- `public/fonts/NotoSansDevanagari-Bold.woff` — Noto Sans Devanagari, © Google,
+  SIL Open Font License 1.1 (via Fontsource). Used for the Hindi name on the
+  main gate.
+
+## Reference sources for accuracy
+
+- SVNIT Hostel Information Brochure 2025-26 (svnit.ac.in) — hostel names,
+  types and room counts; photographs of the main entrance (red name wall,
+  "SVNIT" letters, emblem pillar, flag mast).
+- OpenStreetMap multipolygon relations (fetched 2026-09-24) — Mother Teresa
+  Bhavan, Nehru Bhavan, New CRC and courtyard blocks.

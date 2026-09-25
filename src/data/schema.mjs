@@ -38,6 +38,9 @@ export function validateCampusData(o) {
         errors.push(`building ${b.id} bad category "${b.category}"`);
       }
       if (!isRing(b.footprint)) errors.push(`building ${b.id} footprint invalid`);
+      if (b.holes !== undefined && !(Array.isArray(b.holes) && b.holes.every((h) => isRing(h)))) {
+        errors.push(`building ${b.id} holes invalid`);
+      }
       if (!isVec2(b.centroid)) errors.push(`building ${b.id} centroid invalid`);
       if (!(b.height > 0)) errors.push(`building ${b.id} height invalid`);
       if (!Number.isFinite(b.levels) || b.levels < 1) errors.push(`building ${b.id} levels invalid`);

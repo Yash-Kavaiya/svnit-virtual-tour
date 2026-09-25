@@ -31,3 +31,19 @@ describe('dom', () => {
     release();
   });
 });
+
+describe('Credits', () => {
+  it("links the author's LinkedIn and X profiles in a new tab", async () => {
+    const { Credits } = await import('../../src/ui/Credits.js');
+    const root = document.createElement('div');
+    const c = new Credits(root);
+    const links = [...root.querySelectorAll('a')];
+    expect(root.textContent).toContain('Yash Kavaiya');
+    expect(links.map((a) => a.href)).toEqual(['https://www.linkedin.com/in/yashkavaiya', 'https://x.com/yashkavaiya']);
+    for (const a of links) {
+      expect(a.target).toBe('_blank');
+      expect(a.rel).toContain('noopener');
+    }
+    c.dispose();
+  });
+});

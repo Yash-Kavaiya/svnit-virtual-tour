@@ -3,6 +3,7 @@ import { mulberry32, hashString } from '../core/rng.js';
 import { pointInRing } from '../shared/polygon.mjs';
 import { SPECIES, hedgeSegment } from './plantModels.js';
 import { Settings } from '../core/Settings.js';
+import { gateFrame } from './gateFrame.js';
 
 // Blue-noise-ish scatter with rejection. Deterministic for a given seed.
 export function scatterPoints({ bounds, count, seed = 1, reject, minSpacing = 6 }) {
@@ -45,7 +46,8 @@ export function scatterPoints({ bounds, count, seed = 1, reject, minSpacing = 6 
   return out;
 }
 
-const DENSITY = { low: 0, medium: 0.5, high: 1, ultra: 1.6 };
+// trees are instanced (a few draw calls), so even 'low' keeps a green campus
+const DENSITY = { low: 0.3, medium: 0.5, high: 1, ultra: 1.6 };
 
 // Per-tree canopy tint, returned as an [r, g, b] MULTIPLIER centred on 1.0.
 // It is written into `InstancedMesh.instanceColor`, which the shader multiplies
@@ -73,24 +75,27 @@ export function createVegetation(campus, registry) {
   const HERO = new Set(['library', 'admin', 'auditorium']);
   const buildingRings = buildings.map((b) => ({
     ring: b.footprint,
+    holes: b.holes ?? [],
     pad: HERO.has(b.category) ? 15 : 6.5,
   }));
   const waterRings = (water ?? []).map((w) => w.polygon);
-  // keep a clear apron around each gate (the spawn area)
-  const centre = [
-    (bounds.minX + bounds.maxX) / 2,
-    (bounds.minZ + bounds.maxZ) / 2,
-  ];
-  const spawnSpots = (campus.gates ?? []).map((g) => {
-    const dx = centre[0] - g.x;
-    const dz = centre[1] - g.z;
-    const l = Math.hypot(dx, dz) || 1;
-    return [g.x + (dx / l) * 28, g.z + (dz / l) * 28];
+  // spawn point plus the gate carriageway and forecourt stay clear
+  const spawnSpots = (campus.gates ?? []).flatMap((g) => {
+    const { inx, inz } = gateFrame(g, bounds);
+    return [-12, 0, 14, 28].map((d) => [g.x + inx * d, g.z + inz * d]);
   });
 
   const reject = (x, z) => {
     for (const s of spawnSpots) if (Math.hypot(x - s[0], z - s[1]) < 14) return true;
-    for (const { ring, pad } of buildingRings) {
+    for (const { ring, holes, pad } of buildingRings) {
+      const court = holes.find((h) => pointInRing([x, z], h));
+      if (court) {
+        // a courtyard garden: fine, if clear of the courtyard walls
+        for (let i = 0; i < court.length; i++) {
+          if (distToSeg(x, z, court[i], court[(i + 1) % court.length]) < 4.5) return true;
+        }
+        continue;
+      }
       if (pointInRing([x, z], ring)) return true;
       for (let i = 0; i < ring.length; i++) {
         if (distToSeg(x, z, ring[i], ring[(i + 1) % ring.length]) < pad) return true;

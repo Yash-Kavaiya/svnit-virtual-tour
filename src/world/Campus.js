@@ -15,6 +15,8 @@ import { createLife } from './Life.js';
 import { PlayerController } from '../player/PlayerController.js';
 import { Collider } from '../player/Collision.js';
 import { TIME_PRESETS } from './TimeOfDay.js';
+import { gateFrame } from './gateFrame.js';
+import { setFacadeNight } from './buildings/FacadeMaterial.js';
 
 const D2R = Math.PI / 180;
 
@@ -64,21 +66,17 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
 
   const player = new PlayerController({ camera, collider, domElement });
 
-  // Spawn just inside the Main Gate, facing into campus.
+  // Spawn on the carriageway just inside the Main Gate, facing the statue.
   const gate = campus.gates?.[0];
   const centre = [
     (campus.bounds.minX + campus.bounds.maxX) / 2,
     (campus.bounds.minZ + campus.bounds.maxZ) / 2,
   ];
   if (gate) {
-    const inx = centre[0] - gate.x;
-    const inz = centre[1] - gate.z;
-    const inl = Math.hypot(inx, inz) || 1;
-    const dirx = inx / inl;
-    const dirz = inz / inl;
+    const { inx: dirx, inz: dirz } = gateFrame(gate, campus.bounds);
     // camera forward at yaw is (-sin yaw, -cos yaw); face the campus centre
     player.teleport(
-      new THREE.Vector3(gate.x + dirx * 28, 1.7, gate.z + dirz * 28),
+      new THREE.Vector3(gate.x + dirx * 9, 1.7, gate.z + dirz * 9),
       Math.atan2(-dirx, -dirz),
     );
   } else {
@@ -90,6 +88,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     const p = TIME_PRESETS[name] ?? TIME_PRESETS.noon;
     sky.setPreset(name);
     lighting.setPreset(name);
+    setFacadeNight(name);
     scene.fog.color.set(p.fogColor);
     scene.fog.density = p.fogDensity;
     scene.background = new THREE.Color(p.skyHorizon);
@@ -126,6 +125,7 @@ export async function createCampusScene({ campus, renderer, domElement, onProgre
     api,
     update(dt) {
       player.update(dt);
+      sky.update(dt);
       lighting.updateShadowTarget(camera.position);
       water.update(dt);
       buildings.update(camera.position);

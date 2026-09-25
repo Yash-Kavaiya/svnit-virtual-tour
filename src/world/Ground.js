@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { gateFrame } from './gateFrame.js';
 import { grassTexture, concreteTexture } from './textures.js';
 import { ensureWinding } from '../shared/polygon.mjs';
 
@@ -84,7 +85,7 @@ export function createGround(campus, registry) {
   }
 
   // Perimeter wall along the boundary
-  group.add(buildBoundaryWall(campus.boundary, registry));
+  group.add(buildBoundaryWall(campus.boundary, registry, gateGaps(campus)));
 
   return {
     group,
@@ -100,7 +101,47 @@ export function createGround(campus, registry) {
   };
 }
 
-function buildBoundaryWall(boundary, registry) {
+// Gate openings as { x, z, r }: the wall is cut within r metres of each.
+function gateGaps(campus) {
+  return (campus.gates ?? []).map((g) => ({
+    x: g.x,
+    z: g.z,
+    r: gateFrame(g, campus.bounds).halfOpening,
+  }));
+}
+
+// Boundary edges as [a, b] wall runs, with gate openings cut out.
+export function wallRuns(boundary, gaps = []) {
+  const runs = [];
+  for (let i = 0; i < boundary.length; i++) {
+    const a = boundary[i];
+    const b = boundary[(i + 1) % boundary.length];
+    const dx = b[0] - a[0];
+    const dz = b[1] - a[1];
+    const len = Math.hypot(dx, dz);
+    if (len < 1e-6) continue;
+    let cuts = [];
+    for (const g of gaps) {
+      const t = ((g.x - a[0]) * dx + (g.z - a[1]) * dz) / (len * len);
+      const off = Math.abs((g.x - a[0]) * dz - (g.z - a[1]) * dx) / len;
+      if (off > g.r) continue;
+      const half = Math.sqrt(g.r * g.r - off * off) / len;
+      if (t + half < 0 || t - half > 1) continue;
+      cuts.push([t - half, t + half]);
+    }
+    cuts = cuts.sort((p, q) => p[0] - q[0]);
+    let t0 = 0;
+    const at = (t) => [a[0] + dx * t, a[1] + dz * t];
+    for (const [c0, c1] of cuts) {
+      if (c0 > t0) runs.push([at(t0), at(Math.min(c0, 1))]);
+      t0 = Math.max(t0, c1);
+    }
+    if (t0 < 1) runs.push([at(t0), b]);
+  }
+  return runs;
+}
+
+function buildBoundaryWall(boundary, registry, gaps = []) {
   const wall = new THREE.Group();
   wall.name = 'boundary-wall';
   const height = 2.4;
@@ -112,9 +153,7 @@ function buildBoundaryWall(boundary, registry) {
   const pierMat = registry.mat('wall-pier', () => new THREE.MeshStandardMaterial({ color: '#b7a077', roughness: 0.9 }));
 
   const segGeoCache = new Map();
-  for (let i = 0; i < boundary.length; i++) {
-    const a = boundary[i];
-    const b = boundary[(i + 1) % boundary.length];
+  for (const [a, b] of wallRuns(boundary, gaps)) {
     const dx = b[0] - a[0];
     const dz = b[1] - a[1];
     const len = Math.hypot(dx, dz);

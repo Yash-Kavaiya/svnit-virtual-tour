@@ -36,6 +36,9 @@ export function classifyBuilding({ tags = {}, name = '' } = {}) {
   if (tags.amenity === 'cafe' || tags.amenity === 'restaurant') return 'dining';
   if (tags.healthcare || tags.amenity === 'clinic' || tags.amenity === 'hospital') return 'health';
   if (tags.power === 'substation') return 'utility';
+  if (/^(apartments|residential|house|detached|terrace)$/.test(tags.building ?? '')) {
+    return 'residence';
+  }
 
   for (const [re, cat] of NAME_RULES) if (re.test(name)) return cat;
 

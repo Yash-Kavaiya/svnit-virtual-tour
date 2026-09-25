@@ -5,18 +5,21 @@ Vallabhbhai National Institute of Technology, Surat** (SVNIT) — Ichchhanath,
 Surat, Gujarat.
 
 You walk or free-fly through a navigable 3D model of the campus whose
-**layout, road network, water bodies and building footprints come from real
-OpenStreetMap data**, with procedurally generated Indian-institutional
+**layout, road network, building footprints, main entrance and points of
+interest come from real OpenStreetMap data**, with procedurally generated Indian-institutional
 building architecture, real building name-boards, landscaping, landmarks
-(the Sardar Patel statue and the main gate), ambient life and sound,
-a guided-tour mode, a minimap, and clickable building information.
+(the Sardar Patel statue and both entrance gates), ambient life and sound,
+a guided tour that visits every building, a minimap, and clickable building information.
 
 Three buildings are enterable with hand-built interiors: the **Central
 Library**, a **Lecture Theatre (LT-2)**, and the **Administration Building
 lobby**.
 
-![Academic courtyard block](docs/screenshots/academic-courtyard.jpg)
-![The campus from above](docs/screenshots/campus-aerial.jpg)
+![Old gate at Ichchhanath — red portal and name board, flag behind](docs/screenshots/old-gate.jpg)
+![New gate on the Dumas Road junction — red name wall and SVNIT letters](docs/screenshots/new-gate.jpg)
+![The campus from above](docs/screenshots/campus-aerial-3.jpg)
+![Staff quarters colony](docs/screenshots/staff-quarters.jpg)
+![Hostels at night](docs/screenshots/hostels-night.jpg)
 
 ## Run it
 
@@ -62,7 +65,7 @@ npm run data       # data/osm/*.json + data/campus/curated.mjs  ->  src/data/cam
 - `data/osm/overpass-raw.json` — a committed OpenStreetMap (Overpass API)
   export of the campus area.
 - `data/campus/curated.mjs` — a hand overlay that adds department names,
-  the auditorium, hostels OSM lacks, the main gate, sports grounds and
+  the main gate, approximate sports grounds and
   fixes. See [`data/campus/README.md`](data/campus/README.md) to correct
   any building.
 
@@ -110,3 +113,16 @@ or endorsed by SVNIT. See [`CREDITS.md`](CREDITS.md).
 - WebXR / VR mode
 - More walk-in interiors
 - 360° photo nodes overlaid on the model
+
+## Deploy (CI/CD)
+
+- **CI** — `.github/workflows/ci.yml` runs lint, the Vitest suite and a
+  production build on every pull request and every push to `main`.
+- **CD** — the repo is connected to Vercel (`vercel.json`): every pull
+  request gets a preview deployment (link posted on the PR) and every push
+  to `main` deploys to production. Protect `main` with the `ci` check so
+  only green builds are merged and shipped.
+
+## Author
+
+Created by **Yash Kavaiya** — [LinkedIn](https://www.linkedin.com/in/yashkavaiya) · [X](https://x.com/yashkavaiya)
