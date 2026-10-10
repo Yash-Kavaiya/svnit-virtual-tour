@@ -7,7 +7,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # jsdom 30 pulls in undici 8, and Vitest 5 refuses Node 20.
+          # On Node 20 the three jsdom UI suites never start:
+          # CacheStorage throws `webidl.util.markAsUncloneable is not a function`.
+          # Node 22 LTS satisfies jsdom (^22.22.2), undici (>=22.19), and Vitest.
+          # Vercel is unchanged: it still runs `npm ci` then `npm run build`.
+          # Vite 8 accepts both Node 20.19+ and Node 22.12+.
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint
